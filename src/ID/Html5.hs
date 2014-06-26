@@ -4,7 +4,7 @@
 
 module ID.Html5
     ( ElementBuilder
-    , EmptyBuilder
+    , AttributeBuilder
 
     , emptyTags
     , contentTags
@@ -15,18 +15,16 @@ module ID.Html5
 
 
 import           Control.Applicative
-import           Control.Monad
 import qualified Data.Map.Lazy       as M
 import qualified Data.Text           as T
 import qualified Data.Vector         as V
 import           System.Random.MWC
 import           Text.XML
 
+import ID.Html5.Types
 
-type ElementBuilder  = [Node] -> [(Name, T.Text)] -> Element
-type EmptyBuilder    = [(Name, T.Text)] -> Element
 
-emptyEl :: Name -> EmptyBuilder
+emptyEl :: Name -> AttributeBuilder
 emptyEl name attrs = Element name (M.fromList attrs) []
 
 el :: Name -> ElementBuilder
@@ -35,8 +33,41 @@ el name children attrs = Element name (M.fromList attrs) children
 text :: T.Text -> Node
 text = NodeContent
 
+randItem :: V.Vector a -> GenIO -> IO a
+randItem v g = (v V.!) <$> uniformR (0, V.length v - 1) g
 
-emptyTags :: V.Vector EmptyBuilder
+randList :: Double -> GenIO -> IO a -> IO [a]
+randList r g m =
+    mapM (const m) . takeWhile (<=r) =<<  sequence (repeat (uniform g))
+
+generateElement :: Double -> GenIO -> IO Element
+generateElement r g =
+    (`fmap` randList r g gattr) =<< generate' =<< uniform g
+    where generate' :: Double -> IO AttributeBuilder
+          generate' v | v < 0.5   = randItem emptyTags g
+                      | otherwise = randItem contentTags g <*> randList r g gnode
+          gnode = generateNode r g
+          gattr = generateAttribute r g
+
+generateNode :: Double -> GenIO -> IO Node
+generateNode r g = generate' =<< uniform g
+    where generate' :: Double -> IO Node
+          generate' x | x < 0.5   = generateText r g
+                      | otherwise = NodeElement <$> generateElement r g
+
+generateAttribute :: Double -> GenIO -> IO (Name, T.Text)
+generateAttribute r g = (,) <$> randItem attrNames g <*> generateValue r g
+
+generateValue :: Double -> GenIO -> IO T.Text
+generateValue r g = T.pack <$> randList r g (randItem alphaNum g)
+    where alphaNum = V.fromList $ ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9']
+
+generateText :: Double -> GenIO -> IO Node
+generateText _ g =
+    text . T.unwords . (`take` xs) <$> uniformR (0, length xs - 1) g
+    where xs = T.words loremIpsum
+
+emptyTags :: V.Vector AttributeBuilder
 emptyTags = V.fromList [ emptyEl "area"
                        , emptyEl "base"
                        , emptyEl "br"
@@ -317,64 +348,29 @@ attrNames = V.fromList [ "accept"
                        , "xmlns"
                        ]
 
-randItem :: V.Vector a -> GenIO -> IO a
-randItem v g = (v V.!) <$> uniformR (0, V.length v - 1) g
-
-randList :: Double -> GenIO -> IO a -> IO [a]
-randList r g m =
-    mapM (const m) . takeWhile (<=r) =<<  (sequence $ repeat (uniform g))
-
-generateElement :: Double -> GenIO -> IO Element
-generateElement r g =
-    (`fmap` randList r g gattr) =<< generate' =<< uniform g
-    where generate' :: Double -> IO EmptyBuilder
-          generate' v | v < 0.5   = randItem emptyTags g
-                      | otherwise = randItem contentTags g <*> randList r g gnode
-          gnode = generateNode r g
-          gattr = generateAttribute r g
-
-generateNode :: Double -> GenIO -> IO Node
-generateNode r g = generate' =<< uniform g
-    where generate' :: Double -> IO Node
-          generate' x | x < 0.5   = generateText r g
-                      | otherwise = NodeElement <$> generateElement r g
-
-generateAttribute :: Double -> GenIO -> IO (Name, T.Text)
-generateAttribute r g = (,) <$> randItem attrNames g <*> generateValue r g
-
-generateValue :: Double -> GenIO -> IO T.Text
-generateValue r g = T.pack <$> randList r g (randItem alphaNum g)
-    where alphaNum = V.fromList $ ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9']
-
-generateText :: Double -> GenIO -> IO Node
-generateText _ g =
-    text . T.unwords . (`take` xs) <$> uniformR (0, length xs - 1) g
-    where xs = T.words loremIpsum
-
 loremIpsum :: T.Text
 loremIpsum = "\
-\Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cupiditates non\n\
-\Epicuri divisione finiebat, sed sua satietate. Scaevola tribunus plebis\n\
-\ferret ad plebem vellentne de ea re quaeri. Istic sum, inquit. Duo Reges:\n\
-\constructio interrete.\n\
-\\n\
-\At enim hic etiam dolore. Ex ea difficultate illae fallaciloquae, ut ait\n\
-\Accius, malitiae natae sunt. Si est nihil nisi corpus, summa erunt illa:\n\
-\valitudo, vacuitas doloris, pulchritudo, cetera. Quamquam ab iis\n\
-\philosophiam et omnes ingenuas disciplinas habemus; Tum Torquatus: Prorsus,\n\
-\inquit, assentior; Non igitur de improbo, sed de callido improbo quaerimus,\n\
-\qualis Q. Cur id non ita fit? Hunc vos beatum;\n\
-\\n\
-\Quis enim potest ea, quae probabilia videantur ei, non probare? Haec quo\n\
-\modo conveniant, non sane intellego. Illa videamus, quae a te de amicitia\n\
-\dicta sunt. Sic enim censent, oportunitatis esse beate vivere. Duo enim\n\
-\genera quae erant, fecit tria. Graccho, eius fere, aequalí? Utinam quidem\n\
-\dicerent alium alio beatiorem! Iam ruinas videres. Dulce amarum, leve\n\
-\asperum, prope longe, stare movere, quadratum rotundum.\n\
-\\n\
-\Uterque enim summo bono fruitur, id est voluptate. Nos paucis ad haec\n\
-\additis finem faciamus aliquando; Cum autem in quo sapienter dicimus, id\n\
-\a primo rectissime dicitur. Quando enim Socrates, qui parens philosophiae\n\
-\iure dici potest, quicquam tale fecit? Nonne igitur tibi videntur, inquit,\n\
-\mala? Si enim ad populum me vocas, eum."
-
+    \Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cupiditates non\n\
+    \Epicuri divisione finiebat, sed sua satietate. Scaevola tribunus plebis\n\
+    \ferret ad plebem vellentne de ea re quaeri. Istic sum, inquit. Duo Reges:\n\
+    \constructio interrete.\n\
+    \\n\
+    \At enim hic etiam dolore. Ex ea difficultate illae fallaciloquae, ut ait\n\
+    \Accius, malitiae natae sunt. Si est nihil nisi corpus, summa erunt illa:\n\
+    \valitudo, vacuitas doloris, pulchritudo, cetera. Quamquam ab iis\n\
+    \philosophiam et omnes ingenuas disciplinas habemus; Tum Torquatus: Prorsus,\n\
+    \inquit, assentior; Non igitur de improbo, sed de callido improbo quaerimus,\n\
+    \qualis Q. Cur id non ita fit? Hunc vos beatum;\n\
+    \\n\
+    \Quis enim potest ea, quae probabilia videantur ei, non probare? Haec quo\n\
+    \modo conveniant, non sane intellego. Illa videamus, quae a te de amicitia\n\
+    \dicta sunt. Sic enim censent, oportunitatis esse beate vivere. Duo enim\n\
+    \genera quae erant, fecit tria. Graccho, eius fere, aequalí? Utinam quidem\n\
+    \dicerent alium alio beatiorem! Iam ruinas videres. Dulce amarum, leve\n\
+    \asperum, prope longe, stare movere, quadratum rotundum.\n\
+    \\n\
+    \Uterque enim summo bono fruitur, id est voluptate. Nos paucis ad haec\n\
+    \additis finem faciamus aliquando; Cum autem in quo sapienter dicimus, id\n\
+    \a primo rectissime dicitur. Quando enim Socrates, qui parens philosophiae\n\
+    \iure dici potest, quicquam tale fecit? Nonne igitur tibi videntur, inquit,\n\
+    \mala? Si enim ad populum me vocas, eum."

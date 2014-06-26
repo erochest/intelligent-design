@@ -18,6 +18,8 @@ cabal-version:       >=1.10
 executable intelligent-design
   main-is:             IntelligentDesign.hs
   other-modules:       ID.Html5
+                     , ID.Html5.Types
+                     , ID.GP.Types
                      , ID.Types
   -- other-extensions:    
   build-depends:       base >=4.7 && <4.8
