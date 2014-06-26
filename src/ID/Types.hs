@@ -1,15 +1,13 @@
 {-# LANGUAGE DeriveFunctor              #-}
+{-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE TemplateHaskell            #-}
+{-# OPTIONS_GHC -fwarn-typed-holes #-}
 
 
 module ID.Types
-    ( Mutatable(..)
-    , Mateable(..)
-    , Generateable(..)
-
-    , IDState(..)
+    ( IDState(..)
     , idStateGen
     , idGen
 
@@ -17,6 +15,7 @@ module ID.Types
     , idConfigMutation
     , idConfigPopulation
     , idConfigMating
+    , idConfigGenerate
     , idConfigOutput
 
     , ID(..)
@@ -30,17 +29,21 @@ module ID.Types
     , geneGenesis
     , geneData
 
+    , GeneData(..)
     ) where
 
 
 import           Control.Applicative
 import           Control.Lens
-import           Control.Monad.State
 import           Control.Monad.Reader
-import qualified Data.Text                 as T
+import           Control.Monad.State.Strict
+import qualified Data.Text                  as T
 import           Filesystem.Path.CurrentOS
-import           Prelude                   hiding (FilePath)
+import           Prelude                    hiding (FilePath)
 import           System.Random.MWC
+import           Text.XML
+
+import           ID.Html5
 
 
 data IDState = IDState
@@ -53,6 +56,7 @@ data IDConfig = IDConfig
               { _idConfigMutation   :: !Double
               , _idConfigPopulation :: !Int
               , _idConfigMating     :: !Double
+              , _idConfigGenerate   :: !Double
               , _idConfigOutput     :: !FilePath
               }
 makeLenses ''IDConfig
@@ -67,8 +71,7 @@ runID m c =   fmap (fmap _idGen)
           .   (`IDState` 0)
           =<< create
 
-type GeneId = T.Text
-
+type GeneId  = T.Text
 data Genesis = Spontaneous | Copy GeneId | Mated GeneId GeneId
              deriving (Eq)
 
@@ -80,12 +83,18 @@ data Gene a = Gene
             deriving (Eq, Functor)
 makeLenses ''Gene
 
-class Mutatable a where
-    mutate :: a -> ID a
-
-class Mateable a where
-    mate :: a -> a -> ID a
-
-class Generateable a where
+class GeneData a where
     generate :: ID a
+    mutate   :: a -> ID a
+    mate     :: a -> a -> ID a
 
+withGen :: (r -> GenIO -> IO a) -> (IDConfig -> r) -> ID a
+withGen f ratep = do
+    rate <- asks ratep
+    gen  <- gets _idStateGen
+    liftIO $ f rate gen
+
+instance GeneData Element where
+    generate = withGen generateElement _idConfigGenerate
+    mutate   = undefined
+    mate     = undefined
