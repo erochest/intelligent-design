@@ -37,23 +37,28 @@ randItem :: V.Vector a -> GenIO -> IO a
 randItem v g = (v V.!) <$> uniformR (0, V.length v - 1) g
 
 randList :: Double -> GenIO -> IO a -> IO [a]
-randList r g m =
-    mapM (const m) . takeWhile (<=r) =<<  sequence (repeat (uniform g))
+randList r g m = do
+    v <- uniform g
+    if v <= r
+        then (:) <$> m <*> randList r g m
+        else return []
 
-generateElement :: Double -> GenIO -> IO Element
-generateElement r g =
+generateElement :: Double -> Int -> GenIO -> IO Element
+generateElement _ 0 _ = return $ Element "span" M.empty []
+generateElement r d g =
     (`fmap` randList r g gattr) =<< generate' =<< uniform g
     where generate' :: Double -> IO AttributeBuilder
           generate' v | v < 0.5   = randItem emptyTags g
                       | otherwise = randItem contentTags g <*> randList r g gnode
-          gnode = generateNode r g
+          gnode = generateNode r (d - 1) g
           gattr = generateAttribute r g
 
-generateNode :: Double -> GenIO -> IO Node
-generateNode r g = generate' =<< uniform g
+generateNode :: Double -> Int -> GenIO -> IO Node
+generateNode _ 0 _ = return $ NodeComment T.empty
+generateNode r d g = generate' =<< uniform g
     where generate' :: Double -> IO Node
           generate' x | x < 0.5   = generateText r g
-                      | otherwise = NodeElement <$> generateElement r g
+                      | otherwise = NodeElement <$> generateElement r d g
 
 generateAttribute :: Double -> GenIO -> IO (Name, T.Text)
 generateAttribute r g = (,) <$> randItem attrNames g <*> generateValue r g

@@ -26,6 +26,7 @@ executable intelligent-design
                      , optparse-applicative
                      , text
                      , system-filepath
+                     , system-fileio
                      , unordered-containers
                      , mwc-random
                      , mtl
@@ -35,6 +36,7 @@ executable intelligent-design
                      , xml-types
                      , xml-conduit
                      , containers
+                     , blaze-markup
   hs-source-dirs:      ./
                      , ./src/
   default-language:    Haskell2010
