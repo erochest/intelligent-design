@@ -50,7 +50,9 @@ withGen f ratep = do
     liftIO $ f rate gen
 
 instance GeneData Element where
-    generate = withGen generateElement _idConfigGenerate
+    generate = do
+        maxDepth <- asks _idConfigMaxDepth
+        withGen (`generateElement` maxDepth) _idConfigGenerate
     mutate   = undefined
     mate     = undefined
 

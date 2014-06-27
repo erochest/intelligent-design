@@ -15,6 +15,7 @@ module ID.Types
     , idConfigPopulation
     , idConfigMating
     , idConfigGenerate
+    , idConfigMaxDepth
     , idConfigOutput
 
     , ID(..)
@@ -42,6 +43,7 @@ data IDConfig = IDConfig
               , _idConfigPopulation :: !Int
               , _idConfigMating     :: !Double
               , _idConfigGenerate   :: !Double
+              , _idConfigMaxDepth   :: !Int
               , _idConfigOutput     :: !FilePath
               }
 makeLenses ''IDConfig

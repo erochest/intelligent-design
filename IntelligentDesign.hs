@@ -9,10 +9,10 @@ import           Control.Monad
 import           Filesystem                hiding (writeFile)
 import           Filesystem.Path.CurrentOS
 import           Prelude                   hiding (FilePath, writeFile)
-import           System.IO                 hiding (FilePath, writeFile)
 import           System.Random.MWC
 import           Text.XML
 
+import           ID.Fitness
 import           ID.Html5
 
 
