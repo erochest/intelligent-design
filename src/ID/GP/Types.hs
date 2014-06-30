@@ -27,7 +27,7 @@ import           ID.Types
 
 
 type GeneId  = T.Text
-data Genesis = Spontaneous | Copy GeneId | Mated GeneId GeneId
+data Genesis = Spontaneous | Copy GeneId | XOver GeneId GeneId
              deriving (Eq)
 
 data Gene a = Gene
