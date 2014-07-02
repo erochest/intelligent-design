@@ -20,9 +20,12 @@ module ID.Types
 
     , ID(..)
     , runID
+
+    , ReadFile
     ) where
 
 
+import           Codec.Picture
 import           Control.Applicative
 import           Control.Lens
 import           Control.Monad.Reader
@@ -31,6 +34,8 @@ import           Filesystem.Path.CurrentOS
 import           Prelude                    hiding (FilePath)
 import           System.Random.MWC
 
+
+type ReadFile a = (FilePath, DynamicImage)
 
 data IDState = IDState
              { _idStateGen :: GenIO

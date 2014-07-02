@@ -44,6 +44,9 @@ executable intelligent-design
                      , JuicyPixels
                      , aeson
                      , process
+                     , vector
+                     , phash
+                     , errors
   hs-source-dirs:      ./
                      , ./src/
   default-language:    Haskell2010

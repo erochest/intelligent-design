@@ -3,8 +3,7 @@ all: init test docs package
 
 init:
 	cabal sandbox init
-	cabal install --enable-tests --only-dependencies
-	cabal configure --enable-tests
+	make deps
 
 test: build
 
@@ -33,7 +32,7 @@ configure: clean
 	cabal configure --enable-tests
 
 deps: clean
-	cabal install --only-dependencies --enable-tests
+	cabal install --only-dependencies --allow-newer --enable-tests
 	cabal configure --enable-tests
 
 build:
