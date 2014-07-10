@@ -25,10 +25,9 @@ matchScreen (target, targetDImage) outputDir (Gene gId genesis el) = do
     outputHtml html el
     screenshot html png $ dimageWidth targetDImage
     targetHash <- imageHash target'
-    fitness <- maybe (return $ fromIntegral (maxBound :: Int))
-                     (`comparePage` png)
-                     targetHash
-    return fitness
+    maybe (return $ fromIntegral (maxBound :: Int))
+          (`comparePage` png)
+          targetHash
     where geneId' = decode gId
           html    = outputDir </> geneId' <.> "html"
           png     = outputDir </> geneId' <.> "png"
