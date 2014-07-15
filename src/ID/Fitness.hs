@@ -7,9 +7,9 @@ module ID.Fitness
     ) where
 
 
+import qualified Data.Vector as V
 import           Codec.Picture
 import           Control.Error
-import           Data.PHash
 import           Filesystem.Path.CurrentOS
 import           Prelude                   hiding (FilePath, writeFile)
 import           System.Process
@@ -17,20 +17,23 @@ import           Text.XML
 
 import           ID.GP.Types
 import           ID.Types
-import           Paths_intelligent_design
 
 
 matchScreen :: ReadFile a -> FilePath -> Gene Element -> IO Double
 matchScreen (target, targetDImage) outputDir (Gene gId genesis el) = do
     outputHtml html el
-    screenshot html png $ dimageWidth targetDImage
-    targetHash <- imageHash target'
-    maybe (return $ fromIntegral (maxBound :: Int))
-          (`comparePage` png)
-          targetHash
+    screenshot html base $ dimageWidth targetDImage
+    -- targetHash <- imageHash target'
+    return 42
+    {-
+     - maybe (return $ fromIntegral (maxBound :: Int))
+     -       (`comparePage` png)
+     -       targetHash
+     -}
     where geneId' = decode gId
-          html    = outputDir </> geneId' <.> "html"
-          png     = outputDir </> geneId' <.> "png"
+          base    = outputDir </> geneId'
+          html    = base <.> "html"
+          png     = decodeString $ encodeString base ++ "-full.png"
           -- json    = outputDir </> geneId' <.> "json"
           target' = encodeString target
 
@@ -55,16 +58,16 @@ outputHtml html = writeFile settings html . wrapEl
           wrapEl el = Document (Prologue [] Nothing []) el []
 
 screenshot :: FilePath -> FilePath -> Int -> IO ()
-screenshot html png width = do
-    rasterize_js <- getDataFileName "bin/rasterize.js"
-    callProcess "phantomjs" [ rasterize_js
-                            , encodeString html
-                            , encodeString png
-                            , show width ++ "px"
-                            ]
+screenshot html base width =
+    callProcess "webkit2png" [ "-W", show width
+                             , "-o", encodeString base
+                             , encodeString html
+                             ]
 
 -- TODO Compare PNG and original.
-comparePage :: PHash -> FilePath -> IO Double
-comparePage target test = do
-    hash <- imageHash $ encodeString test
-    return . fromIntegral $ maybe (maxBound :: Int) (hammingDistance target) hash
+{-
+ - comparePage :: PHash -> FilePath -> IO Double
+ - comparePage target test = do
+ -     hash <- imageHash $ encodeString test
+ -     return . fromIntegral $ maybe (maxBound :: Int) (hammingDistance target) hash
+ -}
