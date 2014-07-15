@@ -7,6 +7,11 @@ init:
 
 test: build
 
+run:
+	@rm -rf output
+	mkdir output
+	cabal run
+
 # docs:
 # generate api documentation
 #
