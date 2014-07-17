@@ -12,9 +12,17 @@ module ID.GP.Types
     , geneData
 
     , GeneData(..)
+
+    , GeneFitness
+    , FitnessError
+    , FitnessF
+    , FitnessM
+    , Fitness
+    , runFitness
     ) where
 
 
+import           Control.Error
 import           Control.Lens
 import           Control.Monad.Reader
 import           Control.Monad.State.Strict
@@ -56,3 +64,12 @@ instance GeneData Element where
     mutate   = undefined
     mate     = undefined
 
+type GeneFitness  = Double
+type FitnessError = T.Text
+type FitnessM     = EitherT FitnessError IO
+type Fitness      = FitnessM GeneFitness
+type FitnessF a   = Gene a -> Fitness
+
+runFitness :: GeneData a
+           => FitnessF a -> Gene a -> IO (Either FitnessError GeneFitness)
+runFitness f gene = runEitherT $ f gene

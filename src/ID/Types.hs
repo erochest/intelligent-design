@@ -35,7 +35,7 @@ import           Prelude                    hiding (FilePath)
 import           System.Random.MWC
 
 
-type ReadFile a = (FilePath, DynamicImage)
+type ReadFile a = (FilePath, Image a)
 
 data IDState = IDState
              { _idStateGen :: GenIO

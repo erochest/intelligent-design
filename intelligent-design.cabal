@@ -23,6 +23,7 @@ executable intelligent-design
                      , ID.GP
                      , ID.GP.Types
                      , ID.Types
+                     , ID.Utils
   -- other-extensions:    
   build-depends:       base >=4.7 && <4.8
                      , optparse-applicative
@@ -47,6 +48,7 @@ executable intelligent-design
                      , monad-par
                      , parallel
                      , formatting
+                     , bifunctors
                      -- , webkit   -- requires gtk2hs-buildtools -- work-arounds export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig cabal install webkit --with-gcc=gcc-4.8
   hs-source-dirs:      ./
                      , ./src/
