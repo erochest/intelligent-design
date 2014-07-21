@@ -63,7 +63,7 @@ screenshot html base width =
 
 comparePage :: Image PixelRGBA8 -> Image PixelRGBA8 -> Double
 comparePage targetImg geneImg =
-    sum [ dist (pixelAt geneImg x y) (pixelAt targetImg x y) | x <- [0..w], y <- [0..h] ] / c
+    sum [ pixelAt geneImg x y `dist` pixelAt targetImg x y | x <- [0..w], y <- [0..h] ] / c
     where w = pred $ min (imageWidth targetImg) (imageWidth geneImg)
           h = pred $ min (imageHeight targetImg) (imageHeight geneImg)
           c = fromIntegral w * fromIntegral h
