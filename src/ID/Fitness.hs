@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes        #-}
 {-# OPTIONS_GHC -fwarn-typed-holes #-}
+{-# OPTIONS_GHC -Wall #-}
 
 
 module ID.Fitness
@@ -11,12 +12,10 @@ module ID.Fitness
 
 
 import           Codec.Picture
-import           Control.Arrow
 import           Control.Error
 import           Control.Monad
 import           Control.Monad.IO.Class
 import qualified Data.Text                 as T
-import qualified Data.Vector.Storable      as V
 import           Filesystem.Path.CurrentOS
 import           Prelude                   hiding (FilePath, writeFile)
 import           System.Process
@@ -53,8 +52,19 @@ screenshot html base width =
                              ]
 
 comparePage :: Image PixelRGBA8 -> Image PixelRGBA8 -> Double
-comparePage targetImg imgImg = undefined
-    where (target, img) = commonData (imageData targetImg) (imageData imgImg)
+comparePage targetImg imgImg =
+    sum [ dist (pixelAt imgImg x y) (pixelAt targetImg x y) | x <- [0..w], y <- [0..h] ] / c
+    where w = pred $ min (imageWidth targetImg) (imageWidth imgImg)
+          h = pred $ min (imageHeight targetImg) (imageHeight imgImg)
+          c = fromIntegral w * fromIntegral h
+
+dist :: PixelRGBA8 -> PixelRGBA8 -> Double
+dist (PixelRGBA8 r0 g0 b0 a0) (PixelRGBA8 r1 g1 b1 a1) =
+    let r = fromIntegral $ r0 - r1
+        g = fromIntegral $ g0 - g1
+        b = fromIntegral $ b0 - b1
+        a = fromIntegral $ a0 - a1
+    in  r^(2 :: Int) + g^(2 :: Int) + b^(2 :: Int) + a^(2 :: Int)
 
 getRGB8 :: DynamicImage -> Either T.Text (Image PixelRGB8)
 getRGB8 (ImageRGB8 i) = Right i
@@ -63,15 +73,3 @@ getRGB8 _             = Left "Not RGB8."
 getRGBA8 :: DynamicImage -> Either T.Text (Image PixelRGBA8)
 getRGBA8 (ImageRGBA8 i) = Right i
 getRGBA8 _              = Left "Not RGBA8."
-
-commonData :: V.Storable a => V.Vector a -> V.Vector a -> (V.Vector a, V.Vector a)
-commonData x y = (f *** f) (x, y)
-    where f   = V.take len
-          len = min (V.length x) (V.length y)
-
-sqDist :: Locatable a => a -> a -> Double
-sqDist x y = let d = x `dist` y
-             in  d * d
-
-class Locatable a where
-    dist :: a -> a -> Double
