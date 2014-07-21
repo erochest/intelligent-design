@@ -51,11 +51,21 @@ screenshot html base width =
                              , encodeString html
                              ]
 
+-- | Currently, this just uses the MSE of the distance between the pixels
+-- in the gene image and the target image. The processing is truncated on
+-- the smallest of the two images. This won't be sufficient. At the
+-- minimum, we need to scale the values. A better option might be to scale
+-- the coordinates by the largest image, and then fill the other with
+-- transparent pixels. We could also penalize the score based on the
+-- difference is the image sizes.
+--
+-- TODO: handle image scaling better
+
 comparePage :: Image PixelRGBA8 -> Image PixelRGBA8 -> Double
-comparePage targetImg imgImg =
-    sum [ dist (pixelAt imgImg x y) (pixelAt targetImg x y) | x <- [0..w], y <- [0..h] ] / c
-    where w = pred $ min (imageWidth targetImg) (imageWidth imgImg)
-          h = pred $ min (imageHeight targetImg) (imageHeight imgImg)
+comparePage targetImg geneImg =
+    sum [ dist (pixelAt geneImg x y) (pixelAt targetImg x y) | x <- [0..w], y <- [0..h] ] / c
+    where w = pred $ min (imageWidth targetImg) (imageWidth geneImg)
+          h = pred $ min (imageHeight targetImg) (imageHeight geneImg)
           c = fromIntegral w * fromIntegral h
 
 dist :: PixelRGBA8 -> PixelRGBA8 -> Double
