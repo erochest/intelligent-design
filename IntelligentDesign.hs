@@ -49,6 +49,6 @@ main = withSystemRandom $ \g -> eitherT onError onOK $ do
     target <- EitherT . fmap (join . bimap T.pack getRGB8) . readImage
            $  encodeString targetFile
     let target' = promoteImage target
-    forM_ [1..1000] $ procFile g (targetFile, target')
+    forM_ [1..100] $ procFile g (targetFile, target')
     where onError = TIO.putStrLn
           onOK    = const $ return ()

@@ -30,7 +30,7 @@ matchScreen :: ReadFile PixelRGBA8 -> FilePath -> FitnessF Element
 matchScreen (_, targetDImage) outputDir (Gene gId _ el) = do
     liftIO $ do
         outputHtml html el
-        screenshot html base $ imageWidth targetDImage
+        screenshot html base (imageWidth targetDImage) (imageHeight targetDImage)
     screen <- hoistEither . getRGBA8 =<< hoistStrErrorM (readImage $ encodeString png)
     return $ comparePage targetDImage screen
     where geneId' = decode gId
@@ -44,10 +44,11 @@ outputHtml html = writeFile settings html . wrapEl
     where settings  = def  -- { rsPretty = True }
           wrapEl el = Document (Prologue [] Nothing []) el []
 
-screenshot :: FilePath -> FilePath -> Int -> IO ()
-screenshot html base width =
-    callProcess "webkit2png" [ "-W", show width
-                             , "-o", encodeString base
+screenshot :: FilePath -> FilePath -> Int -> Int -> IO ()
+screenshot html base width height =
+    callProcess "webkit2png" [ "--width",  show width
+                             , "--height", show height
+                             , "--filename", encodeString base
                              , encodeString html
                              ]
 
