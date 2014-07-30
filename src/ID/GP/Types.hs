@@ -53,13 +53,13 @@ class GeneData a where
 
 withGen :: (r -> GenIO -> IO a) -> (IDConfig -> r) -> ID a
 withGen f ratep = do
-    rate <- asks ratep
+    rate <- asks (ratep . fst)
     gen  <- gets _idStateGen
     liftIO $ f rate gen
 
 instance GeneData Element where
     generate = do
-        maxDepth <- asks _idConfigMaxDepth
+        maxDepth <- view (_1 . idConfigMaxDepth)
         withGen (`generateElement` maxDepth) _idConfigGenerate
     mutate   = undefined
     mate     = undefined

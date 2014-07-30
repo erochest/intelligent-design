@@ -10,11 +10,13 @@ import           Codec.Picture.Types
 import           Control.Error
 import           Control.Monad
 import           Control.Monad.IO.Class
+import           Data.Aeson
 import           Data.Bifunctor
+import qualified Data.ByteString.Lazy      as BSL
 import qualified Data.Text                 as T
 import qualified Data.Text.IO              as TIO
-import           Filesystem                hiding (writeFile)
-import           Filesystem.Path.CurrentOS
+import           Filesystem                hiding (decode, writeFile)
+import           Filesystem.Path.CurrentOS hiding (decode)
 import           Prelude                   hiding (FilePath, writeFile)
 import           System.Random.MWC
 import           Text.XML
@@ -23,6 +25,7 @@ import           ID.Fitness
 import           ID.GP.Types
 import           ID.Html5
 import           ID.Opts
+import           ID.Types
 
 
 outputDir :: FilePath
@@ -55,4 +58,8 @@ generateRandom = withSystemRandom $ \g -> eitherT onError onOK $ do
           onOK    = const $ return ()
 
 main :: IO ()
-main = print =<< execParser options
+main =   execParser options
+     >>= BSL.readFile . optConfig
+     >>= putStrLn . maybe "<ERROR>" show . decodeConfig
+    where decodeConfig :: BSL.ByteString -> Maybe IDConfig
+          decodeConfig = decode

@@ -1,0 +1,7 @@
+{
+    "populationSize": 50,
+    "mutationRate": 0.05,
+    "crossOverRate": 0.8,
+    "generateFactor": 0.4,
+    "maxDepth": 50
+}
