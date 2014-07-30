@@ -22,6 +22,7 @@ executable intelligent-design
                      , ID.Fitness
                      , ID.GP
                      , ID.GP.Types
+                     , ID.Opts
                      , ID.Types
                      , ID.Utils
   -- other-extensions:    
@@ -49,6 +50,7 @@ executable intelligent-design
                      , parallel
                      , formatting
                      , bifunctors
+                     , configurator
                      -- , webkit   -- requires gtk2hs-buildtools -- work-arounds export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig cabal install webkit --with-gcc=gcc-4.8
   hs-source-dirs:      ./
                      , ./src/

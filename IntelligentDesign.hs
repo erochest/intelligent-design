@@ -22,6 +22,7 @@ import           Text.XML
 import           ID.Fitness
 import           ID.GP.Types
 import           ID.Html5
+import           ID.Opts
 
 
 outputDir :: FilePath
@@ -44,11 +45,14 @@ procFile g target i = do
     liftIO . TIO.writeFile (encodeString score) . T.pack $ show fitness
 
 
-main :: IO ()
-main = withSystemRandom $ \g -> eitherT onError onOK $ do
+generateRandom :: IO ()
+generateRandom = withSystemRandom $ \g -> eitherT onError onOK $ do
     target <- EitherT . fmap (join . bimap T.pack getRGB8) . readImage
            $  encodeString targetFile
     let target' = promoteImage target
     forM_ [1..100] $ procFile g (targetFile, target')
     where onError = TIO.putStrLn
           onOK    = const $ return ()
+
+main :: IO ()
+main = print =<< execParser options
