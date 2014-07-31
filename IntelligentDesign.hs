@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
 {-# OPTIONS_GHC -fwarn-typed-holes #-}
 
 
@@ -10,12 +11,13 @@ import           Codec.Picture.Types
 import           Control.Error
 import           Control.Monad
 import           Control.Monad.IO.Class
+import           Control.Monad.Logger
 import           Data.Aeson
 import           Data.Bifunctor
 import qualified Data.ByteString.Lazy      as BSL
 import qualified Data.Text                 as T
 import qualified Data.Text.IO              as TIO
-import           Filesystem                hiding (decode, writeFile)
+import           Filesystem                hiding (writeFile)
 import           Filesystem.Path.CurrentOS hiding (decode)
 import           Prelude                   hiding (FilePath, writeFile)
 import           System.Random.MWC
@@ -58,8 +60,16 @@ generateRandom = withSystemRandom $ \g -> eitherT onError onOK $ do
           onOK    = const $ return ()
 
 main :: IO ()
-main =   execParser options
-     >>= BSL.readFile . optConfig
-     >>= putStrLn . maybe "<ERROR>" show . decodeConfig
+main = do
+    opts <- execParser options
+    cfg' <- fmap decodeConfig . BSL.readFile $ optConfig opts
+    case cfg' of
+        Just cfg -> do
+            print cfg
+            void $ runID greetings cfg "output"
+        Nothing -> putStrLn "<ERROR>"
     where decodeConfig :: BSL.ByteString -> Maybe IDConfig
           decodeConfig = decode
+
+          greetings :: ID ()
+          greetings = $(logInfo) "How can I do something."

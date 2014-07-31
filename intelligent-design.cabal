@@ -51,6 +51,7 @@ executable intelligent-design
                      , formatting
                      , bifunctors
                      , bytestring
+                     , monad-logger
                      -- , webkit   -- requires gtk2hs-buildtools -- work-arounds export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig cabal install webkit --with-gcc=gcc-4.8
   hs-source-dirs:      ./
                      , ./src/

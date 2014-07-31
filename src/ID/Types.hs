@@ -29,6 +29,7 @@ module ID.Types
 import           Codec.Picture
 import           Control.Applicative
 import           Control.Lens
+import           Control.Monad.Logger
 import           Control.Monad.Reader
 import           Control.Monad.State.Strict
 import           Data.Aeson
@@ -65,12 +66,29 @@ instance FromJSON IDConfig where
 
 type IDReader = (IDConfig, FilePath)
 
-newtype ID a = ID { unID :: ReaderT IDReader (StateT IDState IO) a }
-               deriving ( Functor, Applicative, Monad, MonadIO
-                        , MonadReader IDReader, MonadState IDState)
+newtype ID a = ID { unID :: LoggingT (ReaderT IDReader (StateT IDState IO)) a }
+               deriving (Functor, Applicative, Monad)
+
+instance MonadLogger ID where
+    monadLoggerLog a b c d = ID $ monadLoggerLog a b c d
+
+instance MonadIO ID where
+    liftIO = ID . lift . lift . lift
+
+instance MonadReader IDReader ID where
+    ask = ID . lift $ ask
+    local f m = do
+        (c, f') <- f <$> ask
+        liftIO . fmap fst $ runID m c f'
+    reader = ID . lift . reader
+
+instance MonadState IDState ID where
+    get = ID . lift $ get
+    put = ID . lift . put
+    state = ID . lift . state
 
 runID :: ID a -> IDConfig -> FilePath -> IO (a, Int)
 runID m c out =   fmap (fmap _idGen)
-              .   runStateT (runReaderT (unID m) (c, out))
+              .   runStateT (runReaderT (runStdoutLoggingT (unID m)) (c, out))
               .   (`IDState` 0)
               =<< create
