@@ -21,6 +21,7 @@ module ID.Types
 
     , ID(..)
     , runID
+    , runID'
 
     , ReadFile
     ) where
@@ -76,15 +77,18 @@ instance MonadIO ID where
     liftIO = ID . lift . lift . lift
 
 instance MonadReader IDReader ID where
-    ask = ID . lift $ ask
+    ask       = ID . lift $ ask
     local f m = do
-        (c, f') <- f <$> ask
-        liftIO . fmap fst $ runID m c f'
-    reader = ID . lift . reader
+        r <- f <$> ask
+        s <- get
+        (a, s') <- liftIO $ runID' m r s
+        put s'
+        return a
+    reader    = ID . lift . reader
 
 instance MonadState IDState ID where
-    get = ID . lift $ get
-    put = ID . lift . put
+    get   = ID . lift $ get
+    put   = ID . lift . put
     state = ID . lift . state
 
 runID :: ID a -> IDConfig -> FilePath -> IO (a, Int)
@@ -92,3 +96,6 @@ runID m c out =   fmap (fmap _idGen)
               .   runStateT (runReaderT (runStdoutLoggingT (unID m)) (c, out))
               .   (`IDState` 0)
               =<< create
+
+runID' :: ID a -> IDReader -> IDState -> IO (a, IDState)
+runID' m r s = runStateT (runReaderT (runStdoutLoggingT (unID m)) r) s
