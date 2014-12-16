@@ -1,16 +1,23 @@
 
+SRC=$(shell find src -name '*.hs')
+
+CABAL=cabal
+FLAGS=--enable-tests
+
 all: init test docs package
 
 init:
-	cabal sandbox init
+	${CABAL} sandbox init
 	make deps
 
 test: build
+	cabal test --test-option=--color
+
+specs: build
+	./dist/build/intelligent-design-specs/intelligent-design-specs
 
 run:
-	@rm -rf output
-	mkdir output
-	cabal run
+	${CABAL} run
 
 # docs:
 # generate api documentation
@@ -27,22 +34,30 @@ run:
 # deploy:
 # prep and push
 
+tags: ${SRC}
+	hasktags --ctags *.hs src
+
+hlint:
+	hlint *.hs src specs
+
 clean:
-	cabal clean
+	${CABAL} clean
 
 distclean: clean
-	cabal sandbox delete
+	${CABAL} sandbox delete
 
 configure: clean
-	cabal configure --enable-tests
+	cabal configure ${FLAGS}
 
 deps: clean
-	cabal install --only-dependencies --allow-newer --enable-tests
-	cabal configure --enable-tests
+	${CABAL} install --only-dependencies --allow-newer ${FLAGS}
+	make configure
 
 build:
 	cabal build
 
+restart: distclean init build
+
 rebuild: clean configure build
 
-.PHONY: test docs
+.PHONY: all init test run clean distclean configure deps build rebuild hlint

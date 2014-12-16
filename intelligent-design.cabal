@@ -16,7 +16,7 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 executable intelligent-design
-  main-is:             IntelligentDesign.hs
+  main-is:             Main.hs
   other-modules:       ID.Html5
                      , ID.Html5.Types
                      , ID.Fitness
