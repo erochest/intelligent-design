@@ -50,7 +50,7 @@ configure: clean
 	cabal configure ${FLAGS}
 
 deps: clean
-	${CABAL} install --only-dependencies --allow-newer ${FLAGS}
+	${CABAL} install --only-dependencies --allow-newer --constraint=monad-control==0.3.3.0  ${FLAGS}
 	make configure
 
 build:

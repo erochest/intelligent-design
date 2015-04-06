@@ -26,15 +26,15 @@ executable intelligent-design
                      , ID.Types
                      , ID.Utils
   -- other-extensions:    
-  build-depends:       base >=4.7 && <4.8
+  build-depends:       base                 >= 4.7 && <4.9
                      , optparse-applicative
                      , text
                      , system-filepath
                      , system-fileio
                      , unordered-containers
                      , mwc-random
-                     , mtl
-                     , transformers
+                     , mtl                  >= 2.0 && <2.3
+                     , transformers         >= 0.2 && <0.5
                      , lens
                      , xml-types
                      , xml-conduit
@@ -49,7 +49,7 @@ executable intelligent-design
                      , monad-par
                      , parallel
                      , formatting
-                     , bifunctors
+                     , bifunctors           >= 4.2 && <4.3
                      , bytestring
                      , monad-logger
                      -- , webkit   -- requires gtk2hs-buildtools -- work-arounds export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig cabal install webkit --with-gcc=gcc-4.8
@@ -62,7 +62,7 @@ test-suite intelligent-design-specs
   ghc-options:         -threaded -rtsopts
   hs-source-dirs:      specs
   main-is:             Specs.hs
-  build-depends:         base       == 4.7.*
+  build-depends:         base       == 4.8.*
                        , QuickCheck
                        , smallcheck
                        , hspec

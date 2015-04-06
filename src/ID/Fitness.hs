@@ -1,7 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes        #-}
-{-# OPTIONS_GHC -fwarn-typed-holes #-}
-{-# OPTIONS_GHC -Wall #-}
 
 
 module ID.Fitness
@@ -31,7 +29,8 @@ matchScreen (_, targetDImage) outputDir (Gene gId _ el) = do
     liftIO $ do
         outputHtml html el
         screenshot html base (imageWidth targetDImage) (imageHeight targetDImage)
-    screen <- hoistEither . getRGBA8 =<< hoistStrErrorM (readImage $ encodeString png)
+    screen <-  hoistEither . getRGBA8
+           =<< hoistStrErrorM (readImage $ encodeString png)
     return $ comparePage targetDImage screen
     where geneId' = decode gId
           base    = outputDir </> geneId'
@@ -64,7 +63,8 @@ screenshot html base width height =
 
 comparePage :: Image PixelRGBA8 -> Image PixelRGBA8 -> Double
 comparePage targetImg geneImg =
-    sum [ pixelAt geneImg x y `dist` pixelAt targetImg x y | x <- [0..w], y <- [0..h] ] / c
+    sum [ pixelAt geneImg x y `dist` pixelAt targetImg x y
+        | x <- [0..w], y <- [0..h] ] / c
     where w = pred $ min (imageWidth targetImg) (imageWidth geneImg)
           h = pred $ min (imageHeight targetImg) (imageHeight geneImg)
           c = fromIntegral w * fromIntegral h

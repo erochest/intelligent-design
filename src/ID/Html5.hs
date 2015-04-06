@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# OPTIONS_GHC -fwarn-typed-holes #-}
 
 
 module ID.Html5
