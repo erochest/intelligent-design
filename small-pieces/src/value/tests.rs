@@ -44,3 +44,75 @@ mod invoke {
             .is_equal_to(&Arc::new(Value::Int(2)));
     }
 }
+
+mod from {
+    use super::{super::*, random_str};
+    use spectral::prelude::*;
+
+    #[test]
+    fn returns_boolean_variant() {
+        assert_that(&Value::from(true)).is_equal_to(&Value::Boolean(true));
+        assert_that(&Value::from(false)).is_equal_to(&Value::Boolean(false));
+    }
+
+    #[test]
+    fn returns_char_variant() {
+        assert_that(&Value::from('a')).is_equal_to(&Value::Char('a'));
+        assert_that(&Value::from('X')).is_equal_to(&Value::Char('X'));
+
+        let c: char = rand::random();
+        assert_that(&Value::from(c)).is_equal_to(&Value::Char(c));
+    }
+
+    #[test]
+    fn returns_nil_for_empty_vector() {
+        let input: Vec<Value> = vec![];
+        assert_that(&Value::from(input)).is_equal_to(&Value::Nil);
+    }
+
+    #[test]
+    fn returns_cons_list_for_vector() {
+        let input: Vec<Value> = vec![Value::Int(2), Value::Int(13), Value::Int(42)];
+        let expected = Value::cons(
+            Value::Int(2),
+            Value::cons(Value::Int(13), Value::cons(Value::Int(42), Value::Nil)),
+        );
+
+        assert_that(&Value::from(input)).is_equal_to(&expected);
+    }
+
+    #[test]
+    fn returns_cons_list_for_raw_values() {
+        let input = vec![false, true, true, false];
+        let expected = Value::cons(
+            Value::Boolean(false),
+            Value::cons(
+                Value::Boolean(true),
+                Value::cons(
+                    Value::Boolean(true),
+                    Value::cons(Value::Boolean(false), Value::Nil),
+                ),
+            ),
+        );
+
+        assert_that(&Value::from(input)).is_equal_to(&expected);
+    }
+
+    #[test]
+    fn returns_ints() {
+        let value: i64 = rand::random();
+        assert_that(&Value::from(value)).is_equal_to(&Value::Int(value));
+    }
+
+    #[test]
+    fn returns_symbols_for_str() {
+        let value = "list";
+        assert_that(&Value::from(value)).is_equal_to(&Value::Symbol("list".to_string()));
+    }
+
+    #[test]
+    fn returns_symbols_for_strings() {
+        let value = random_str();
+        assert_that(&Value::from(value.clone())).is_equal_to(&Value::Symbol(value.clone()));
+    }
+}

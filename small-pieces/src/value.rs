@@ -1,7 +1,8 @@
+use std::convert::From;
 use std::sync::Arc;
 
-use crate::error::{Error, Result};
 use crate::environment::Environment;
+use crate::error::{Error, Result};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Value {
@@ -19,8 +20,6 @@ pub enum Value {
 pub type SharedValue = Arc<Value>;
 
 use Value::*;
-
-// Will the type predicates below be used in practice? Or will matching cover them?
 
 impl Value {
     pub fn cons(head: Value, tail: Value) -> Self {
@@ -49,6 +48,51 @@ impl Value {
 
     pub fn eval_error(&self) -> Error {
         Error::EvaluationError(format!("unable to evaluate: {:?}", self))
+    }
+}
+
+impl Default for Value {
+    fn default() -> Self {
+        Nil
+    }
+}
+
+impl From<bool> for Value {
+    fn from(value: bool) -> Self {
+        Boolean(value)
+    }
+}
+
+impl From<char> for Value {
+    fn from(value: char) -> Self {
+        Char(value)
+    }
+}
+
+impl<V: Into<Value>> From<Vec<V>> for Value {
+    fn from(values: Vec<V>) -> Self {
+        values
+            .into_iter()
+            .rev()
+            .fold(Nil, |current, item| Value::cons(item.into(), current))
+    }
+}
+
+impl From<i64> for Value {
+    fn from(value: i64) -> Self {
+        Int(value)
+    }
+}
+
+impl From<&str> for Value {
+    fn from(value: &str) -> Self {
+        Symbol(value.to_string())
+    }
+}
+
+impl From<String> for Value {
+    fn from(value: String) -> Self {
+        Symbol(value)
     }
 }
 
