@@ -123,12 +123,9 @@ impl Environment {
     }
 
     fn eval_lambda<'a>(&'a mut self, tail: &Value) -> Option<Result<SharedValue>> {
-        // _head here may actually be params. the current tests should find this.
-        if let Cons(_head, tail) = tail {
-            if let Cons(params, body) = tail.as_ref() {
-                let lambda = Arc::new(Fn(params.clone(), body.clone()));
-                return Some(Ok(lambda));
-            }
+        if let Cons(params, body) = tail {
+            let lambda = Arc::new(Fn(params.clone(), body.clone()));
+            return Some(Ok(lambda));
         }
         None
     }

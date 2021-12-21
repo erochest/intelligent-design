@@ -31,11 +31,8 @@ mod invoke {
     fn returns_result_of_evaluating_body_on_fn() {
         let mut env = Environment::new();
         let expr = Value::Fn(
-            Arc::new(Value::Nil),
-            Arc::new(Value::cons(
-                Value::Int(0),
-                Value::cons(Value::Int(1), Value::cons(Value::Int(2), Value::Nil)),
-            )),
+            Arc::new(Vec::<Value>::new().into()),
+            Arc::new(vec![0, 1, 2].into()),
         );
 
         assert_that(&expr.invoke(&mut env, &Value::Nil))

@@ -7,7 +7,6 @@ fn random_str() -> String {
 mod eval {
     use super::super::*;
     use super::*;
-    use rand::prelude::*;
     use spectral::prelude::*;
 
     fn evaluates_to_self(value: Value) {
@@ -16,6 +15,13 @@ mod eval {
         assert_that(&env.eval(value.clone()))
             .is_ok()
             .is_equal_to(&value);
+    }
+
+    fn evaluates_to(expr: Value, expected: Value) {
+        let expr = Arc::new(expr);
+        let expected = Arc::new(expected);
+        let mut env = Environment::new();
+        assert_that(&env.eval(expr)).is_ok().is_equal_to(&expected);
     }
 
     #[test]
@@ -48,21 +54,10 @@ mod eval {
         evaluates_to_self(Value::Vector(value));
     }
 
-    fn evaluates_to(expr: Value, expected: Value) {
-        let expr = Arc::new(expr);
-        let expected = Arc::new(expected);
-        let mut env = Environment::new();
-        assert_that(&env.eval(expr)).is_ok().is_equal_to(&expected);
-    }
-
     #[test]
     fn quote_evaluate_to_cadr() {
         let value = Value::Symbol(random_str());
-        let expr = Value::cons(
-            Value::symbol("quote"),
-            Value::cons(value.clone(), Value::Nil),
-        );
-
+        let expr = vec!["quote".into(), value.clone()].into();
         evaluates_to(expr, value);
     }
 
@@ -71,13 +66,13 @@ mod eval {
         let test = Value::Boolean(true);
         let true_branch = Value::Int(rand::random());
         let false_branch = Value::Int(rand::random());
-        let expr = Value::cons(
-            Value::symbol("if"),
-            Value::cons(
-                test.clone(),
-                Value::cons(true_branch.clone(), Value::cons(false_branch, Value::Nil)),
-            ),
-        );
+        let expr = vec![
+            "if".into(),
+            test.clone(),
+            true_branch.clone(),
+            false_branch.clone(),
+        ]
+        .into();
 
         evaluates_to(expr, true_branch);
     }
@@ -87,13 +82,13 @@ mod eval {
         let test = Value::Boolean(false);
         let true_branch = Value::Int(rand::random());
         let false_branch = Value::Int(rand::random());
-        let expr = Value::cons(
-            Value::symbol("if"),
-            Value::cons(
-                test.clone(),
-                Value::cons(true_branch, Value::cons(false_branch.clone(), Value::Nil)),
-            ),
-        );
+        let expr = vec![
+            "if".into(),
+            test.clone(),
+            true_branch.clone(),
+            false_branch.clone(),
+        ]
+        .into();
 
         evaluates_to(expr, false_branch);
     }
@@ -102,13 +97,7 @@ mod eval {
     fn set_adds_value_to_environment() {
         let value: i64 = rand::random();
         let name = "test-var".to_string();
-        let expr = Value::cons(
-            Value::symbol("set!"),
-            Value::cons(
-                Value::symbol(name.clone()),
-                Value::cons(Value::Int(value), Value::Nil),
-            ),
-        );
+        let expr = vec![Value::from("set!"), name.clone().into(), value.into()].into();
         let mut env = Environment::new();
 
         assert_that(&env.eval(Arc::new(expr))).is_ok();
@@ -119,27 +108,18 @@ mod eval {
 
     #[test]
     fn begin_evaluates_its_body_in_the_environment() {
-        let value = rand::random();
-        let expr = Value::cons(
-            Value::symbol("begin"),
-            Value::cons(Value::Int(42), Value::cons(Value::Int(value), Value::Nil)),
-        );
+        let value: i64 = rand::random();
+        let expr = vec![Value::from("begin"), 42.into(), value.into()].into();
 
         evaluates_to(expr, Value::Int(value));
     }
 
     #[test]
     fn lambda_creates_function() {
-        let input = Value::cons(
-            Value::symbol("lambda"),
-            Value::cons(
-                Value::symbol("answer"),
-                Value::cons(Value::Nil, Value::cons(Value::Int(42), Value::Nil)),
-            ),
-        );
+        let input = vec![Value::from("lambda"), Vec::<Value>::new().into(), 42.into()].into();
         let expected = Value::Fn(
             Arc::new(Value::Nil),
-            Arc::new(Value::cons(Value::Int(42), Value::Nil)),
+            Arc::new(vec![42].into()),
         );
 
         evaluates_to(input, expected);
@@ -150,9 +130,9 @@ mod eval {
         let value: i64 = rand::random();
         let function = Value::Fn(
             Arc::new(Value::Nil),
-            Arc::new(Value::cons(Value::Int(value), Value::Nil)),
+            Arc::new(vec![42, value].into()),
         );
-        let input = Value::cons(Value::Symbol("answer".to_string()), Value::Nil);
+        let input = vec!["answer"].into();
         let expected = Value::Int(value);
         let mut env = Environment::new();
 
