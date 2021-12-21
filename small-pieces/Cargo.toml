@@ -2,7 +2,13 @@
 name = "small-pieces"
 version = "0.1.0"
 edition = "2021"
+description = "Working through *Lisp In Small Pieces*."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+nom = "*"
+
+[dev-dependencies]
+spectral = "*"
+rand = "0.8.4"
