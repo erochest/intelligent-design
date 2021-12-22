@@ -137,6 +137,12 @@ mod eval {
     }
 
     #[test]
+    fn begin_with_no_body_returns_empty() {
+        let expr: Value = vec!["begin"].into();
+        evaluates_to(expr, Value::Empty);
+    }
+
+    #[test]
     fn begin_evaluates_its_body_in_the_environment() {
         let value: i64 = rand::random();
         let expr = vec![Value::from("begin"), 42.into(), value.into()].into();

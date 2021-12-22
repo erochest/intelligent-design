@@ -19,6 +19,7 @@ pub enum Value {
     Symbol(String),
     Text(String),
     Vector(Vec<Value>),
+    Empty,
 }
 
 pub type SharedValue = Arc<Value>;

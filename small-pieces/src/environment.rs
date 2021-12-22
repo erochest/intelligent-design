@@ -7,7 +7,6 @@ use crate::value::*;
 use Value::*;
 
 // TODO `eprogn`
-// TODO empty `begin` returns what?
 
 pub struct Environment {
     variables: HashMap<String, SharedValue>,
@@ -128,6 +127,9 @@ impl Environment {
             } else if let Err(_) = head_result {
                 return Some(head_result);
             }
+        }
+        if let EmptyCons = tail {
+            return Some(Ok(Arc::new(Empty)))
         }
         None
     }
