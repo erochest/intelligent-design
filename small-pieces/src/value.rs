@@ -17,6 +17,7 @@ pub enum Value {
     Vector(Vec<Value>),
 }
 
+// TODO: Make this a newtype and use Rc or Arc depending on feature flags.
 pub type SharedValue = Arc<Value>;
 
 use Value::*;

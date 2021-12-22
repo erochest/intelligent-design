@@ -6,6 +6,11 @@ use crate::value::*;
 
 use Value::*;
 
+// TODO `if` not-false
+// TODO separate value for `()`
+// TODO `eprogn`
+// TODO empty `begin` returns what?
+
 pub struct Environment {
     variables: HashMap<String, SharedValue>,
 }
