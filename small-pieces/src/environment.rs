@@ -6,8 +6,6 @@ use crate::value::*;
 
 use Value::*;
 
-// TODO `eprogn`
-
 pub struct Environment {
     variables: HashMap<String, SharedValue>,
 }
@@ -115,6 +113,7 @@ impl Environment {
         None
     }
 
+    // This is roughly a translation of `eprogn` from page 10.
     fn eval_begin<'a>(&'a mut self, tail: &Value) -> Option<Result<SharedValue>> {
         if let Cons(head, tail) = tail {
             let head_result = self.eval(Arc::clone(head));
@@ -127,8 +126,7 @@ impl Environment {
             } else if let Err(_) = head_result {
                 return Some(head_result);
             }
-        }
-        if let EmptyCons = tail {
+        } else if let EmptyCons = tail {
             return Some(Ok(Arc::new(Empty)))
         }
         None
