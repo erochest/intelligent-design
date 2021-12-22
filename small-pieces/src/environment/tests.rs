@@ -94,6 +94,20 @@ mod eval {
     }
 
     #[test]
+    fn if_returns_nil_on_false_with_missing_else_branch() {
+        let test = Value::Boolean(false);
+        let true_branch = Value::Int(rand::random());
+        let expr: Value = vec![
+            "if".into(),
+            test.clone(),
+            true_branch.clone(),
+        ]
+        .into();
+
+        evaluates_to(expr, Value::Nil);
+    }
+
+    #[test]
     fn set_adds_value_to_environment() {
         let value: i64 = rand::random();
         let name = "test-var".to_string();

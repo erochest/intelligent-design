@@ -75,8 +75,15 @@ impl Environment {
                         }
                     } else {
                         if let Cons(_, false_branch) = tail.as_ref() {
-                            if let Cons(false_branch, _) = false_branch.as_ref() {
-                                return Some(self.eval(Arc::clone(false_branch)));
+                            let false_branch = false_branch.as_ref();
+                            match false_branch {
+                                Cons(false_branch, _) => {
+                                    return Some(self.eval(Arc::clone(false_branch)));
+                                },
+                                Nil => {
+                                    return Some(Ok(Arc::new(Nil)));
+                                }
+                                _ => {}
                             }
                         }
                     }
