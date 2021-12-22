@@ -68,9 +68,9 @@ mod eval {
         let false_branch = Value::Int(rand::random());
         let expr = vec![
             "if".into(),
-            test.clone(),
+            test,
             true_branch.clone(),
-            false_branch.clone(),
+            false_branch,
         ]
         .into();
 
@@ -99,12 +99,28 @@ mod eval {
         let true_branch = Value::Int(rand::random());
         let expr: Value = vec![
             "if".into(),
-            test.clone(),
-            true_branch.clone(),
+            test,
+            true_branch,
         ]
         .into();
 
         evaluates_to(expr, Value::Nil);
+    }
+
+    #[test]
+    fn if_true_means_not_false() {
+        let test = Value::Int(42);
+        let true_branch = Value::Int(rand::random());
+        let false_branch = Value::Int(rand::random());
+        let expr: Value = vec![
+            "if".into(),
+            test,
+            true_branch.clone(),
+            false_branch,
+        ]
+        .into();
+
+        evaluates_to(expr, true_branch);
     }
 
     #[test]

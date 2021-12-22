@@ -6,7 +6,6 @@ use crate::value::*;
 
 use Value::*;
 
-// TODO `if` not-false
 // TODO separate value for `()`
 // TODO `eprogn`
 // TODO empty `begin` returns what?
@@ -69,11 +68,7 @@ impl Environment {
             match test_result {
                 Ok(test_result) => {
                     let test_result = Arc::clone(&test_result);
-                    if let Boolean(true) = test_result.as_ref() {
-                        if let Cons(true_branch, _) = tail.as_ref() {
-                            return Some(self.eval(Arc::clone(true_branch)));
-                        }
-                    } else {
+                    if let Boolean(false) = test_result.as_ref() {
                         if let Cons(_, false_branch) = tail.as_ref() {
                             let false_branch = false_branch.as_ref();
                             match false_branch {
@@ -85,6 +80,10 @@ impl Environment {
                                 }
                                 _ => {}
                             }
+                        }
+                    } else {
+                        if let Cons(true_branch, _) = tail.as_ref() {
+                            return Some(self.eval(Arc::clone(true_branch)));
                         }
                     }
                 }
