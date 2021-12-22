@@ -147,7 +147,7 @@ mod eval {
     #[test]
     fn lambda_creates_function() {
         let input = vec![Value::from("lambda"), Vec::<Value>::new().into(), 42.into()].into();
-        let expected = Value::Fn(Arc::new(Value::Nil), Arc::new(vec![42].into()));
+        let expected = Value::Fn(Arc::new(Value::EmptyCons), Arc::new(vec![42].into()));
 
         evaluates_to(input, expected);
     }
@@ -155,7 +155,7 @@ mod eval {
     #[test]
     fn invokes_the_named_function() {
         let value: i64 = rand::random();
-        let function = Value::Fn(Arc::new(Value::Nil), Arc::new(vec![42, value].into()));
+        let function = Value::Fn(Arc::new(Value::EmptyCons), Arc::new(vec![42, value].into()));
         let input = vec!["answer"].into();
         let expected = Value::Int(value);
         let mut env = Environment::new();

@@ -6,7 +6,6 @@ use crate::value::*;
 
 use Value::*;
 
-// TODO separate value for `()`
 // TODO `eprogn`
 // TODO empty `begin` returns what?
 
@@ -75,7 +74,7 @@ impl Environment {
                                 Cons(false_branch, _) => {
                                     return Some(self.eval(Arc::clone(false_branch)));
                                 },
-                                Nil => {
+                                EmptyCons => {
                                     return Some(Ok(Arc::new(Nil)));
                                 }
                                 _ => {}
@@ -121,7 +120,7 @@ impl Environment {
         if let Cons(head, tail) = tail {
             let head_result = self.eval(Arc::clone(head));
             if let Ok(_) = head_result {
-                if let Value::Nil = tail.as_ref() {
+                if let Value::EmptyCons = tail.as_ref() {
                     return Some(head_result);
                 } else {
                     return self.eval_begin(&tail);

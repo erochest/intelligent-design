@@ -62,9 +62,9 @@ mod from {
     }
 
     #[test]
-    fn returns_nil_for_empty_vector() {
+    fn returns_empty_cons_for_empty_vector() {
         let input: Vec<Value> = vec![];
-        assert_that(&Value::from(input)).is_equal_to(&Value::Nil);
+        assert_that(&Value::from(input)).is_equal_to(&Value::EmptyCons);
     }
 
     #[test]
@@ -72,7 +72,7 @@ mod from {
         let input: Vec<Value> = vec![Value::Int(2), Value::Int(13), Value::Int(42)];
         let expected = Value::cons(
             Value::Int(2),
-            Value::cons(Value::Int(13), Value::cons(Value::Int(42), Value::Nil)),
+            Value::cons(Value::Int(13), Value::cons(Value::Int(42), Value::EmptyCons)),
         );
 
         assert_that(&Value::from(input)).is_equal_to(&expected);
@@ -87,7 +87,7 @@ mod from {
                 Value::Boolean(true),
                 Value::cons(
                     Value::Boolean(true),
-                    Value::cons(Value::Boolean(false), Value::Nil),
+                    Value::cons(Value::Boolean(false), Value::EmptyCons),
                 ),
             ),
         );

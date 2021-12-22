@@ -4,12 +4,16 @@ use std::sync::Arc;
 use crate::environment::Environment;
 use crate::error::{Error, Result};
 
+// TODO cons-list iterator
+// TODO: Make SharedValue a newtype and use Rc or Arc depending on feature flags.
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Value {
     Nil,
     Boolean(bool),
     Char(char),
     Cons(SharedValue, SharedValue),
+    EmptyCons,
     Fn(SharedValue, SharedValue),
     Int(i64),
     Symbol(String),
@@ -17,7 +21,6 @@ pub enum Value {
     Vector(Vec<Value>),
 }
 
-// TODO: Make this a newtype and use Rc or Arc depending on feature flags.
 pub type SharedValue = Arc<Value>;
 
 use Value::*;
@@ -75,7 +78,7 @@ impl<V: Into<Value>> From<Vec<V>> for Value {
         values
             .into_iter()
             .rev()
-            .fold(Nil, |current, item| Value::cons(item.into(), current))
+            .fold(EmptyCons, |current, item| Value::cons(item.into(), current))
     }
 }
 
