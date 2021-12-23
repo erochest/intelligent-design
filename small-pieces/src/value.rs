@@ -1,10 +1,11 @@
 use std::convert::From;
+use std::iter::{Iterator, IntoIterator};
 use std::sync::Arc;
 
 use crate::environment::Environment;
 use crate::error::{Error, Result};
 
-// TODO cons-list iterator
+// TODO: FromIterator
 // TODO: Make SharedValue a newtype and use Rc or Arc depending on feature flags.
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -98,6 +99,33 @@ impl From<&str> for Value {
 impl From<String> for Value {
     fn from(value: String) -> Self {
         Symbol(value)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct ConsIter {
+    cursor: SharedValue,
+}
+
+impl IntoIterator for Value {
+    type Item = SharedValue;
+    type IntoIter = ConsIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        ConsIter { cursor: Arc::new(self) }
+    }
+}
+
+impl Iterator for ConsIter {
+    type Item = Arc<Value>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Cons(head, tail) = self.cursor.clone().as_ref() {
+            self.cursor = (*tail).clone();
+            Some(head.clone())
+        } else {
+            None
+        }
     }
 }
 

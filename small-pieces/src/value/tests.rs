@@ -72,7 +72,10 @@ mod from {
         let input: Vec<Value> = vec![Value::Int(2), Value::Int(13), Value::Int(42)];
         let expected = Value::cons(
             Value::Int(2),
-            Value::cons(Value::Int(13), Value::cons(Value::Int(42), Value::EmptyCons)),
+            Value::cons(
+                Value::Int(13),
+                Value::cons(Value::Int(42), Value::EmptyCons),
+            ),
         );
 
         assert_that(&Value::from(input)).is_equal_to(&expected);
@@ -111,5 +114,30 @@ mod from {
     fn returns_symbols_for_strings() {
         let value = random_str();
         assert_that(&Value::from(value.clone())).is_equal_to(&Value::Symbol(value.clone()));
+    }
+}
+
+mod iter {
+    use super::super::*;
+    use spectral::prelude::*;
+
+    #[test]
+    fn iterates_over_the_contents_of_the_list() {
+        let value: i64 = rand::random();
+        let input: Value = vec![0, 1, 1, 2, 3, 5, 8, 13, 21, value].into();
+        let expected: Vec<SharedValue> = vec![
+            Arc::new(0.into()),
+            Arc::new(1.into()),
+            Arc::new(1.into()),
+            Arc::new(2.into()),
+            Arc::new(3.into()),
+            Arc::new(5.into()),
+            Arc::new(8.into()),
+            Arc::new(13.into()),
+            Arc::new(21.into()),
+            Arc::new(value.into()),
+        ];
+
+        assert_that(&input.into_iter().collect::<Vec<_>>()).is_equal_to(&expected);
     }
 }
