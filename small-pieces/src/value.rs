@@ -1,6 +1,7 @@
 use std::convert::From;
 use std::iter::{Iterator, IntoIterator};
 use std::ops::Deref;
+use std::rc::Rc;
 use std::sync::Arc;
 
 use crate::environment::Environment;
@@ -23,18 +24,24 @@ pub enum Value {
     Empty,
 }
 
+#[cfg(not(feature = "concurrent"))]
+pub type Shared<T> = Rc<T>;
+
+#[cfg(feature = "concurrent")]
+pub type Shared<T> = Arc<T>;
+
 #[derive(Debug, PartialEq, Eq)]
-pub struct SharedValue(Arc<Value>);
+pub struct SharedValue(Shared<Value>);
 
 impl SharedValue {
     pub fn new(value: Value) -> Self {
-        SharedValue(Arc::new(value))
+        SharedValue(Shared::new(value))
     }
 }
 
 impl Clone for SharedValue {
     fn clone(&self) -> Self {
-        Self(Arc::clone(&self.0))
+        Self(Shared::clone(&self.0))
     }
 }
 
