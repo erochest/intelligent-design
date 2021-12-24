@@ -31,14 +31,14 @@ mod invoke {
     fn returns_result_of_evaluating_body_on_fn() {
         let mut env = Environment::new();
         let expr = Value::Fn(
-            Arc::new(Vec::<Value>::new().into()),
-            Arc::new(vec![0, 1, 2].into()),
+            SharedValue::from(Vec::<Value>::new()),
+            SharedValue::from(vec![0, 1, 2]),
         );
 
         assert_that(&expr.invoke(&mut env, &Value::Nil))
             .is_ok()
             .is_some()
-            .is_equal_to(&Arc::new(Value::Int(2)));
+            .is_equal_to(&Value::Int(2).into());
     }
 }
 
@@ -124,18 +124,18 @@ mod iter {
     #[test]
     fn iterates_over_the_contents_of_the_list() {
         let value: i64 = rand::random();
-        let input: Value = vec![0, 1, 1, 2, 3, 5, 8, 13, 21, value].into();
+        let input: SharedValue = vec![0, 1, 1, 2, 3, 5, 8, 13, 21, value].into();
         let expected: Vec<SharedValue> = vec![
-            Arc::new(0.into()),
-            Arc::new(1.into()),
-            Arc::new(1.into()),
-            Arc::new(2.into()),
-            Arc::new(3.into()),
-            Arc::new(5.into()),
-            Arc::new(8.into()),
-            Arc::new(13.into()),
-            Arc::new(21.into()),
-            Arc::new(value.into()),
+            SharedValue::from(0),
+            SharedValue::from(1),
+            SharedValue::from(1),
+            SharedValue::from(2),
+            SharedValue::from(3),
+            SharedValue::from(5),
+            SharedValue::from(8),
+            SharedValue::from(13),
+            SharedValue::from(21),
+            SharedValue::from(value),
         ];
 
         assert_that(&input.into_iter().collect::<Vec<_>>()).is_equal_to(&expected);

@@ -1,11 +1,11 @@
 use std::convert::From;
 use std::iter::{Iterator, IntoIterator};
+use std::ops::Deref;
 use std::sync::Arc;
 
 use crate::environment::Environment;
 use crate::error::{Error, Result};
 
-// TODO: FromIterator
 // TODO: Make SharedValue a newtype and use Rc or Arc depending on feature flags.
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -23,13 +23,46 @@ pub enum Value {
     Empty,
 }
 
-pub type SharedValue = Arc<Value>;
+#[derive(Debug, PartialEq, Eq)]
+pub struct SharedValue(Arc<Value>);
+
+impl SharedValue {
+    pub fn new(value: Value) -> Self {
+        SharedValue(Arc::new(value))
+    }
+}
+
+impl Clone for SharedValue {
+    fn clone(&self) -> Self {
+        Self(Arc::clone(&self.0))
+    }
+}
+
+impl<V: Into<Value>> From<V> for SharedValue {
+    fn from(value: V) -> Self {
+        SharedValue::new(value.into())
+    }
+}
+
+impl AsRef<Value> for SharedValue {
+    fn as_ref(&self) -> &Value {
+        self.0.as_ref()
+    }
+}
+
+impl Deref for SharedValue {
+    type Target = Value;
+
+    fn deref(&self) -> &Self::Target {
+        self.0.deref()
+    }
+}
 
 use Value::*;
 
 impl Value {
     pub fn cons(head: Value, tail: Value) -> Self {
-        Cons(Arc::new(head), Arc::new(tail))
+        Cons(head.into(), tail.into())
     }
 
     pub fn symbol<S: AsRef<str>>(symbol: S) -> Self {
@@ -107,17 +140,17 @@ pub struct ConsIter {
     cursor: SharedValue,
 }
 
-impl IntoIterator for Value {
+impl IntoIterator for SharedValue {
     type Item = SharedValue;
     type IntoIter = ConsIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        ConsIter { cursor: Arc::new(self) }
+        ConsIter { cursor: self }
     }
 }
 
 impl Iterator for ConsIter {
-    type Item = Arc<Value>;
+    type Item = SharedValue;
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Cons(head, tail) = self.cursor.clone().as_ref() {

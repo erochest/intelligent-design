@@ -10,7 +10,7 @@ mod eval {
     use spectral::prelude::*;
 
     fn evaluates_to_self(value: Value) {
-        let value = Arc::new(value);
+        let value = SharedValue::new(value);
         let mut env = Environment::new();
         assert_that(&env.eval(value.clone()))
             .is_ok()
@@ -18,8 +18,8 @@ mod eval {
     }
 
     fn evaluates_to(expr: Value, expected: Value) {
-        let expr = Arc::new(expr);
-        let expected = Arc::new(expected);
+        let expr = SharedValue::new(expr);
+        let expected = SharedValue::new(expected);
         let mut env = Environment::new();
         assert_that(&env.eval(expr)).is_ok().is_equal_to(&expected);
     }
@@ -130,10 +130,10 @@ mod eval {
         let expr = vec![Value::from("set!"), name.clone().into(), value.into()].into();
         let mut env = Environment::new();
 
-        assert_that(&env.eval(Arc::new(expr))).is_ok();
+        assert_that(&env.eval(SharedValue::new(expr))).is_ok();
         assert_that(&env.lookup(name))
             .is_some()
-            .is_equal_to(&Arc::new(Value::Int(value)));
+            .is_equal_to(&SharedValue::new(Value::Int(value)));
     }
 
     #[test]
@@ -153,7 +153,7 @@ mod eval {
     #[test]
     fn lambda_creates_function() {
         let input = vec![Value::from("lambda"), Vec::<Value>::new().into(), 42.into()].into();
-        let expected = Value::Fn(Arc::new(Value::EmptyCons), Arc::new(vec![42].into()));
+        let expected = Value::Fn(SharedValue::new(Value::EmptyCons), SharedValue::new(vec![42].into()));
 
         evaluates_to(input, expected);
     }
@@ -161,16 +161,16 @@ mod eval {
     #[test]
     fn invokes_the_named_function() {
         let value: i64 = rand::random();
-        let function = Value::Fn(Arc::new(Value::EmptyCons), Arc::new(vec![42, value].into()));
+        let function = Value::Fn(SharedValue::new(Value::EmptyCons), SharedValue::new(vec![42, value].into()));
         let input = vec!["answer"].into();
         let expected = Value::Int(value);
         let mut env = Environment::new();
 
-        env.set("answer", &Arc::new(function)).unwrap();
+        env.set("answer", &SharedValue::new(function)).unwrap();
 
-        assert_that(&env.eval(Arc::new(input)))
+        assert_that(&env.eval(SharedValue::new(input)))
             .is_ok()
-            .is_equal_to(&Arc::new(expected));
+            .is_equal_to(&SharedValue::new(expected));
     }
 }
 
@@ -181,7 +181,7 @@ mod set_var {
     #[test]
     fn sets_value() {
         let mut env = Environment::new();
-        assert_that(&env.set("name", &Arc::new(Value::Int(rand::random())))).is_ok();
+        assert_that(&env.set("name", &SharedValue::new(Value::Int(rand::random())))).is_ok();
     }
 }
 
@@ -193,9 +193,9 @@ mod lookup {
     fn looks_up_a_symbol_in_an_environment() {
         let mut env = Environment::new();
         let value: i64 = rand::random();
-        assert_that(&env.set("name", &Arc::new(Value::Int(value)))).is_ok();
+        assert_that(&env.set("name", &SharedValue::new(Value::Int(value)))).is_ok();
         assert_that(&env.lookup("name"))
             .is_some()
-            .is_equal_to(&Arc::new(Value::Int(value)));
+            .is_equal_to(&SharedValue::new(Value::Int(value)));
     }
 }
