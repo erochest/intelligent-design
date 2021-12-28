@@ -7,7 +7,7 @@ use std::sync::Arc;
 use crate::environment::Environment;
 use crate::error::{Error, Result};
 
-// TODO: Make SharedValue a newtype and use Rc or Arc depending on feature flags.
+// TODO: function parameters in `lambda` and `invoke`
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Value {
