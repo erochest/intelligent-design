@@ -1,5 +1,6 @@
 [workspace]
 
 members = [
-    'small-pieces'
+    'small-pieces',
+    'id-lang'
 ]
