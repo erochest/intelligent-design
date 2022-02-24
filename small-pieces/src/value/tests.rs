@@ -31,14 +31,14 @@ mod invoke {
     fn returns_result_of_evaluating_body_on_fn() {
         let mut env = Environment::new();
         let expr = Value::Fn(
-            Arc::new(Vec::<Value>::new().into()),
-            Arc::new(vec![0, 1, 2].into()),
+            SharedValue::from(Vec::<Value>::new()),
+            SharedValue::from(vec![0, 1, 2]),
         );
 
         assert_that(&expr.invoke(&mut env, &Value::Nil))
             .is_ok()
             .is_some()
-            .is_equal_to(&Arc::new(Value::Int(2)));
+            .is_equal_to(&Value::Int(2).into());
     }
 }
 
@@ -62,9 +62,9 @@ mod from {
     }
 
     #[test]
-    fn returns_nil_for_empty_vector() {
+    fn returns_empty_cons_for_empty_vector() {
         let input: Vec<Value> = vec![];
-        assert_that(&Value::from(input)).is_equal_to(&Value::Nil);
+        assert_that(&Value::from(input)).is_equal_to(&Value::EmptyCons);
     }
 
     #[test]
@@ -72,7 +72,10 @@ mod from {
         let input: Vec<Value> = vec![Value::Int(2), Value::Int(13), Value::Int(42)];
         let expected = Value::cons(
             Value::Int(2),
-            Value::cons(Value::Int(13), Value::cons(Value::Int(42), Value::Nil)),
+            Value::cons(
+                Value::Int(13),
+                Value::cons(Value::Int(42), Value::EmptyCons),
+            ),
         );
 
         assert_that(&Value::from(input)).is_equal_to(&expected);
@@ -87,7 +90,7 @@ mod from {
                 Value::Boolean(true),
                 Value::cons(
                     Value::Boolean(true),
-                    Value::cons(Value::Boolean(false), Value::Nil),
+                    Value::cons(Value::Boolean(false), Value::EmptyCons),
                 ),
             ),
         );
@@ -111,5 +114,30 @@ mod from {
     fn returns_symbols_for_strings() {
         let value = random_str();
         assert_that(&Value::from(value.clone())).is_equal_to(&Value::Symbol(value.clone()));
+    }
+}
+
+mod iter {
+    use super::super::*;
+    use spectral::prelude::*;
+
+    #[test]
+    fn iterates_over_the_contents_of_the_list() {
+        let value: i64 = rand::random();
+        let input: SharedValue = vec![0, 1, 1, 2, 3, 5, 8, 13, 21, value].into();
+        let expected: Vec<SharedValue> = vec![
+            SharedValue::from(0),
+            SharedValue::from(1),
+            SharedValue::from(1),
+            SharedValue::from(2),
+            SharedValue::from(3),
+            SharedValue::from(5),
+            SharedValue::from(8),
+            SharedValue::from(13),
+            SharedValue::from(21),
+            SharedValue::from(value),
+        ];
+
+        assert_that(&input.into_iter().collect::<Vec<_>>()).is_equal_to(&expected);
     }
 }

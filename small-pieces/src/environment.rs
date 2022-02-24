@@ -52,7 +52,7 @@ impl Environment {
 
     fn eval_quote<'a>(&'a mut self, tail: &Value) -> Option<Result<SharedValue>> {
         if let Cons(head, _) = tail {
-            Some(Ok(Arc::clone(head)))
+            Some(Ok(head.clone()))
         } else {
             None
         }
@@ -60,19 +60,26 @@ impl Environment {
 
     fn eval_if<'a>(&'a mut self, tail: &Value) -> Option<Result<SharedValue>> {
         if let Cons(test_expr, tail) = tail {
-            let test_result = self.eval(Arc::clone(test_expr));
+            let test_result = self.eval(test_expr.clone());
             match test_result {
                 Ok(test_result) => {
-                    let test_result = Arc::clone(&test_result);
-                    if let Boolean(true) = test_result.as_ref() {
-                        if let Cons(true_branch, _) = tail.as_ref() {
-                            return Some(self.eval(Arc::clone(true_branch)));
+                    let test_result = test_result.clone();
+                    if let Boolean(false) = test_result.as_ref() {
+                        if let Cons(_, false_branch) = tail.as_ref() {
+                            let false_branch = false_branch.as_ref();
+                            match false_branch {
+                                Cons(false_branch, _) => {
+                                    return Some(self.eval(false_branch.clone()));
+                                },
+                                EmptyCons => {
+                                    return Some(Ok(Nil.into()));
+                                }
+                                _ => {}
+                            }
                         }
                     } else {
-                        if let Cons(_, false_branch) = tail.as_ref() {
-                            if let Cons(false_branch, _) = false_branch.as_ref() {
-                                return Some(self.eval(Arc::clone(false_branch)));
-                            }
+                        if let Cons(true_branch, _) = tail.as_ref() {
+                            return Some(self.eval(true_branch.clone()));
                         }
                     }
                 }
@@ -86,7 +93,7 @@ impl Environment {
         if let Cons(name_symbol, tail) = tail {
             if let Symbol(name) = name_symbol.as_ref() {
                 if let Cons(value_expr, _) = tail.as_ref() {
-                    let value_result = self.eval(Arc::clone(value_expr));
+                    let value_result = self.eval(value_expr.clone());
                     match value_result {
                         Ok(value_result) => {
                             let set_result = self.set(name, &value_result);
@@ -106,11 +113,12 @@ impl Environment {
         None
     }
 
+    // This is roughly a translation of `eprogn` from page 10.
     fn eval_begin<'a>(&'a mut self, tail: &Value) -> Option<Result<SharedValue>> {
         if let Cons(head, tail) = tail {
-            let head_result = self.eval(Arc::clone(head));
+            let head_result = self.eval(head.clone());
             if let Ok(_) = head_result {
-                if let Value::Nil = tail.as_ref() {
+                if let Value::EmptyCons = tail.as_ref() {
                     return Some(head_result);
                 } else {
                     return self.eval_begin(&tail);
@@ -118,21 +126,23 @@ impl Environment {
             } else if let Err(_) = head_result {
                 return Some(head_result);
             }
+        } else if let EmptyCons = tail {
+            return Some(Ok(Empty.into()))
         }
         None
     }
 
     fn eval_lambda<'a>(&'a mut self, tail: &Value) -> Option<Result<SharedValue>> {
         if let Cons(params, body) = tail {
-            let lambda = Arc::new(Fn(params.clone(), body.clone()));
-            return Some(Ok(lambda));
+            let lambda = Fn(params.clone(), body.clone());
+            return Some(Ok(lambda.into()));
         }
         None
     }
 
     pub fn set<S: AsRef<str>>(&mut self, name: S, value: &SharedValue) -> Result<()> {
         self.variables
-            .insert(name.as_ref().to_string(), Arc::clone(value));
+            .insert(name.as_ref().to_string(), value.clone());
         Ok(())
     }
 
