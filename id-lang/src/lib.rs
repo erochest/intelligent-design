@@ -6,31 +6,30 @@ mod error;
 
 use crate::error::{Error, Result};
 
-// TODO: Rename Word to Token
 // TODO: Add Program type
 
 #[derive(Debug, PartialEq)]
-pub enum Word {
+pub enum Token {
     IntLiteral(isize),
     FloatLiteral(f64),
     Name(String),
 }
 
-impl FromStr for Word {
+impl FromStr for Token {
     type Err = Error;
 
     fn from_str(s: &str) -> result::Result<Self, Self::Err> {
         if let Ok(literal) = s.parse() {
-            return Ok(Word::IntLiteral(literal));
+            return Ok(Token::IntLiteral(literal));
         } else if let Ok(literal) = s.parse() {
-            return Ok(Word::FloatLiteral(literal));
+            return Ok(Token::FloatLiteral(literal));
         } else {
-            return Ok(Word::Name(s.to_string()));
+            return Ok(Token::Name(s.to_string()));
         }
     }
 }
 
-pub fn parse_id<R: Read>(input: &mut R) -> Result<Vec<Result<Word>>> {
+pub fn parse_id<R: Read>(input: &mut R) -> Result<Vec<Result<Token>>> {
     let mut buffer = String::new();
     input.read_to_string(&mut buffer)?;
     let words = buffer

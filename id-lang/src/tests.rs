@@ -1,19 +1,19 @@
 use pretty_assertions::assert_eq;
 
-use crate::{parse_id, Word};
+use crate::{parse_id, Token};
 
 #[test]
-fn word_from_str_parses_int_literals() {
-    let result = "42".parse::<Word>();
+fn token_from_str_parses_int_literals() {
+    let result = "42".parse::<Token>();
     assert!(result.is_ok());
-    assert_eq!(Word::IntLiteral(42), result.unwrap());
+    assert_eq!(Token::IntLiteral(42), result.unwrap());
 }
 
 #[test]
-fn word_from_str_parses_float_literals() {
-    let result = "3.14159".parse::<Word>();
+fn token_from_str_parses_float_literals() {
+    let result = "3.14159".parse::<Token>();
     assert!(result.is_ok());
-    if let Word::FloatLiteral(result) = result.unwrap() {
+    if let Token::FloatLiteral(result) = result.unwrap() {
         assert!((3.14159 - result).abs() < 0.001);
     } else {
         assert!(false);
@@ -21,10 +21,10 @@ fn word_from_str_parses_float_literals() {
 }
 
 #[test]
-fn word_from_str_parses_words() {
-    let result = "hello".parse::<Word>();
+fn token_from_str_parses_words() {
+    let result = "hello".parse::<Token>();
     assert!(result.is_ok());
-    assert_eq!(Word::Name("hello".to_string()), result.unwrap());
+    assert_eq!(Token::Name("hello".to_string()), result.unwrap());
 }
 
 #[test]
