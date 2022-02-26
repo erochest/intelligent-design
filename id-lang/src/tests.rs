@@ -28,11 +28,23 @@ fn token_from_str_parses_words() {
 }
 
 #[test]
-fn parse_returns_vec_of_int_literals() {
-    let mut input = "1 2 3".as_bytes();
+fn parse_returns_vec_of_tokens() {
+    let mut input = "1 2 + .".as_bytes();
     let result = parse_id(&mut input);
 
     assert!(result.is_ok());
     let words = result.unwrap();
-    assert_eq!(3, words.len());
+    assert_eq!(4, words.len());
+    assert_eq!(
+        vec![
+            Token::IntLiteral(1),
+            Token::IntLiteral(2),
+            Token::Name("+".to_string()),
+            Token::Name(".".to_string())
+        ],
+        words
+            .into_iter()
+            .filter_map(|result| result.ok())
+            .collect::<Vec<_>>(),
+    );
 }
