@@ -1,6 +1,6 @@
 use pretty_assertions::assert_eq;
 
-use crate::{parse_id, Token};
+use crate::token::{parse_id, Token};
 
 #[test]
 fn token_from_str_parses_int_literals() {
@@ -28,7 +28,7 @@ fn token_from_str_parses_words() {
 }
 
 #[test]
-fn parse_returns_vec_of_tokens() {
+fn parse_id_returns_vec_of_tokens() {
     let mut input = "1 2 + .".as_bytes();
     let result = parse_id(&mut input);
 
