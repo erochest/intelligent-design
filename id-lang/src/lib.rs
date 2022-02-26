@@ -6,17 +6,27 @@ mod error;
 
 use crate::error::{Error, Result};
 
+// TODO: Rename Word to Token
+// TODO: Add Program type
+
 #[derive(Debug, PartialEq)]
 pub enum Word {
     IntLiteral(isize),
+    FloatLiteral(f64),
+    Name(String),
 }
 
 impl FromStr for Word {
     type Err = Error;
 
     fn from_str(s: &str) -> result::Result<Self, Self::Err> {
-        let literal: isize = s.parse()?;
-        Ok(Word::IntLiteral(literal))
+        if let Ok(literal) = s.parse() {
+            return Ok(Word::IntLiteral(literal));
+        } else if let Ok(literal) = s.parse() {
+            return Ok(Word::FloatLiteral(literal));
+        } else {
+            return Ok(Word::Name(s.to_string()));
+        }
     }
 }
 
