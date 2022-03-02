@@ -9,6 +9,7 @@ pub type Result<R> = result::Result<R, Error>;
 pub enum Error {
     IoError(io::Error),
     WordParseError(String),
+    StackOverflow,
 }
 
 use Error::*;
@@ -18,6 +19,7 @@ impl fmt::Display for Error {
         match self {
             IoError(ref err) => write!(f, "{}", err),
             WordParseError(ref input) => write!(f, "unable to determine word for: {}", input),
+            StackOverflow => write!(f, "stack overflow"),
         }
     }
 }
