@@ -2,6 +2,7 @@ use std::fmt::Debug;
 
 use pretty_assertions::assert_eq;
 
+use crate::error::Error;
 use crate::token::Token;
 use crate::interpreter::Stack;
 
@@ -31,7 +32,7 @@ fn plus_add_two_integers() {
 }
 
 #[test]
-fn plus_does_nothing_on_type_mismatch() {
+fn plus_throws_error_on_type_mismatch() {
     let mut stack: Stack<Token> = Stack::new(1024);
     stack.push(IntLiteral(2)).unwrap();
     stack.push(Name("hello".to_string())).unwrap();
@@ -40,7 +41,11 @@ fn plus_does_nothing_on_type_mismatch() {
 
     let result = op(&mut stack);
 
-    assert!(result.is_ok());
+    assert!(result.is_err());
+    match result {
+        Err(Error::TypeError(ref expected)) => assert_eq!(expected, &String::from("integer")),
+        _ => assert!(false),
+    }
     assert_stack(stack, &[IntLiteral(2), Name("hello".to_string())]);
 }
 
@@ -53,6 +58,10 @@ fn plus_does_nothing_on_stack_underflow() {
 
     let result = op(&mut stack);
 
-    assert!(result.is_ok());
+    assert!(result.is_err());
+    match result {
+        Err(Error::StackUnderflow) => assert!(true),
+        _ => assert!(false),
+    }
     assert_stack(stack, &[IntLiteral(2)]);
 }

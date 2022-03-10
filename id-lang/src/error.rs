@@ -10,6 +10,8 @@ pub enum Error {
     IoError(io::Error),
     WordParseError(String),
     StackOverflow,
+    StackUnderflow,
+    TypeError(String),
 }
 
 use Error::*;
@@ -20,6 +22,8 @@ impl fmt::Display for Error {
             IoError(ref err) => write!(f, "{}", err),
             WordParseError(ref input) => write!(f, "unable to determine word for: {}", input),
             StackOverflow => write!(f, "stack overflow"),
+            StackUnderflow => write!(f, "stack underflow"),
+            TypeError(ref expected) => write!(f, "type error: expected {:?}", expected),
         }
     }
 }

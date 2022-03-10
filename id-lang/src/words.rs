@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::error::Result;
+use crate::error::{Result, Error};
 use crate::interpreter::Stack;
 use crate::token::{Token, self};
 
@@ -23,6 +23,10 @@ impl PartialEq for Op {
 }
 
 pub fn plus_op(stack: &mut Stack<Token>) -> Result<()> {
+    if stack.len() < 2 {
+        return Err(Error::StackUnderflow);
+    }
+    
     if let Some(token_a) = stack.pop() {
         if let Token::IntLiteral(a) = token_a {
             if let Some(token_b) = stack.pop() {
@@ -31,12 +35,14 @@ pub fn plus_op(stack: &mut Stack<Token>) -> Result<()> {
                 } else {
                     stack.push(token_b)?;
                     stack.push(token_a)?;
+                    return Err(Error::TypeError("integer".to_string()));
                 }
             } else {
                 stack.push(token_a)?;
             }
         } else {
             stack.push(token_a)?;
+            return Err(Error::TypeError("integer".to_string()));
         }
     }
 
