@@ -1,14 +1,14 @@
 use pretty_assertions::assert_eq;
 
 use crate::token::Token;
-use crate::environment::Environment;
+use crate::environment::{Environment, Executable};
 
 use Token::*;
 
 #[test]
 fn environment_can_add_function() {
     let mut env = Environment::new();
-    env.add_name(
+    env.add_program(
         "double",
         vec![IntLiteral(2), Name("+".to_string())],
     );
@@ -17,9 +17,9 @@ fn environment_can_add_function() {
 #[test]
 fn environment_can_retrieve_function() {
     let mut env = Environment::new();
-    let expected = vec![IntLiteral(2), Name("+".to_string())];
+    let expected = Executable::Prog(vec![IntLiteral(2), Name("+".to_string())]);
 
-    env.add_name("double", vec![IntLiteral(2), Name("+".to_string())]);
+    env.add_program("double", vec![IntLiteral(2), Name("+".to_string())]);
     let result = env.get("double");
 
     assert!(result.is_some());

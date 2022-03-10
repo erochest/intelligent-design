@@ -1,4 +1,4 @@
-use crate::environment::Environment;
+use crate::environment::{Environment, Executable};
 use crate::error::{Error, Result};
 use crate::token::{Program, Token};
 
@@ -55,19 +55,40 @@ impl Interpreter {
     }
 
     pub fn with_capacity(capacity: usize) -> Self {
+        let mut env = Environment::new();
         let stack = Stack::new(capacity);
+        env.load_std();
+
         Self {
-            env: Environment::new(),
+            env,
             stack,
         }
     }
 
     pub fn execute(&mut self, program: Program) -> Result<()> {
+        for item in program {
+            eprintln!("evaluating {:?}", item);
+            match item {
+                Token::IntLiteral(_) => self.stack.push(item)?,
+                Token::FloatLiteral(_) => self.stack.push(item)?,
+                Token::Name(name) => self.evaluate(&name)?,
+            }
+        }
         Ok(())
     }
 
     pub fn evaluate<S: AsRef<str>>(&mut self, name: S) -> Result<()> {
-        todo!()
+        if let Some(exec) = self.env.get(&name) {
+            match exec {
+                Executable::Prog(_) => todo!(),
+                Executable::Oper(op) => {
+                    let op = &op.execute;
+                    op(&mut self.stack)?;
+                }
+            }
+        }
+        // TODO: eating this error.
+        Ok(())
     }
 
     pub fn len(&self) -> usize {
