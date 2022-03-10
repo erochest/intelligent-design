@@ -62,6 +62,22 @@ fn stack_peek_returns_stack_top() {
 }
 
 #[test]
+fn stack_dip_returns_items() {
+    let mut stack = Stack::new(24);
+    stack.push(1).unwrap();
+    stack.push(2).unwrap();
+    stack.push(3).unwrap();
+    stack.push(5).unwrap();
+
+    assert_eq!(4, stack.len());
+    assert_eq!(Some(&5), stack.dip(0));
+    assert_eq!(Some(&3), stack.dip(1));
+    assert_eq!(Some(&2), stack.dip(2));
+    assert_eq!(Some(&1), stack.dip(3));
+    assert_eq!(4, stack.len());
+}
+
+#[test]
 fn interpreter_interprets_input_program() {
     let mut interp = Interpreter::new();
     let result = interp.execute(vec![IntLiteral(2), IntLiteral(2), Name("+".to_string())]);

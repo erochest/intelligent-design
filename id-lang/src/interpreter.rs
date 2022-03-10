@@ -37,6 +37,10 @@ impl<T> Stack<T> {
         self.data.last()
     }
 
+    pub fn dip(&self, offset: usize) -> Option<&T> {
+        self.data.get(self.data.len() - offset - 1)
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.data.iter()
     }
