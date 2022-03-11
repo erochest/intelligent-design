@@ -26,23 +26,16 @@ pub fn plus_op(stack: &mut Stack<Token>) -> Result<()> {
     if stack.len() < 2 {
         return Err(Error::StackUnderflow);
     }
-    
-    if let Some(token_a) = stack.pop() {
-        if let Token::IntLiteral(a) = token_a {
-            if let Some(token_b) = stack.pop() {
-                if let Token::IntLiteral(b) = token_b {
-                    stack.push(Token::IntLiteral(a + b))?;
-                } else {
-                    stack.push(token_b)?;
-                    stack.push(token_a)?;
-                    return Err(Error::TypeError("integer".to_string()));
-                }
-            } else {
-                stack.push(token_a)?;
-            }
-        } else {
-            stack.push(token_a)?;
-            return Err(Error::TypeError("integer".to_string()));
+
+    let is_int_a = stack.dip(1).map(|t| t.is_int()).unwrap_or(false);
+    let is_int_b = stack.dip(0).map(|t| t.is_int()).unwrap_or(false);
+    if (!is_int_a) || (!is_int_b) {
+        return Err(Error::TypeError("integer".to_string()));
+    }
+
+    if let Some(Token::IntLiteral(b)) = stack.pop() {
+        if let Some(Token::IntLiteral(a)) = stack.pop() {
+            stack.push(Token::IntLiteral(a + b))?;
         }
     }
 
