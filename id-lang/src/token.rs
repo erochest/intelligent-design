@@ -11,6 +11,32 @@ pub enum Token {
     Name(String),
 }
 
+impl Token {
+    pub fn is_int(&self) -> bool {
+        if let Token::IntLiteral(_) = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn is_float(&self) -> bool {
+        if let Token::FloatLiteral(_) = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn is_name(&self) -> bool {
+        if let Token::Name(_) = self {
+            true
+        } else {
+            false
+        }
+    }
+}
+
 impl FromStr for Token {
     type Err = Error;
 
