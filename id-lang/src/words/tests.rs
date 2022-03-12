@@ -8,7 +8,7 @@ use crate::interpreter::Stack;
 
 use Token::*;
 
-use super::plus_op_factory;
+use super::{Op, PlusOp};
 
 fn assert_stack<T: PartialEq + Debug>(stack: Stack<T>, expected: &[T]) {
     assert_eq!(expected.len(), stack.len());
@@ -22,10 +22,9 @@ fn plus_add_two_integers() {
     let mut stack: Stack<Token> = Stack::new(1024);
     stack.push(IntLiteral(2)).unwrap();
     stack.push(IntLiteral(3)).unwrap();
-    let plus = plus_op_factory();
-    let op = plus.execute;
+    let plus = PlusOp::new();
 
-    let result = op(&mut stack);
+    let result = plus.execute(&mut stack);
 
     assert!(result.is_ok());
     assert_stack(stack, &[IntLiteral(5)]);
@@ -36,10 +35,9 @@ fn plus_throws_error_on_type_mismatch() {
     let mut stack: Stack<Token> = Stack::new(1024);
     stack.push(IntLiteral(2)).unwrap();
     stack.push(Name("hello".to_string())).unwrap();
-    let plus = plus_op_factory();
-    let op = plus.execute;
+    let plus = PlusOp::new();
 
-    let result = op(&mut stack);
+    let result = plus.check(&mut stack);
 
     assert!(result.is_err());
     match result {
@@ -53,10 +51,9 @@ fn plus_throws_error_on_type_mismatch() {
 fn plus_does_nothing_on_stack_underflow() {
     let mut stack: Stack<Token> = Stack::new(1024);
     stack.push(IntLiteral(2)).unwrap();
-    let plus = plus_op_factory();
-    let op = plus.execute;
+    let plus = PlusOp::new();
 
-    let result = op(&mut stack);
+    let result = plus.check(&mut stack);
 
     assert!(result.is_err());
     match result {

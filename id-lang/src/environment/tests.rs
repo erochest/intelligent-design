@@ -24,7 +24,10 @@ fn environment_can_retrieve_function() {
 
     assert!(result.is_some());
     let result = result.unwrap();
-    assert_eq!(&expected, result);
+    match result {
+        &Executable::Prog(ref p) => assert!(p == &vec![IntLiteral(2), Name("+".to_string())]),
+        _ => assert!(false),
+    }
 }
 
 #[test]

@@ -1,17 +1,16 @@
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 use rand::rngs::adapter::ReseedingRng;
 
 use crate::token::Program;
-use crate::words::{Op, plus_op_factory};
+use crate::words::{Op, PlusOp};
 
-#[derive(Debug, PartialEq)]
 pub enum Executable {
     Prog(Program),
-    Oper(Op),
+    Oper(Box<dyn Op>),
 }
 
-#[derive(Debug)]
 pub struct Environment {
     namespace: HashMap<String, Executable>,
 }
@@ -22,7 +21,7 @@ impl Environment {
     }
 
     pub fn load_std(&mut self) {
-        self.namespace.insert("+".to_string(), Executable::Oper(plus_op_factory()));
+        self.namespace.insert("+".to_string(), Executable::Oper(Box::new(PlusOp::new())));
     }
 
     pub fn add_program<S: AsRef<str>>(&mut self, name: S, program: Program) {

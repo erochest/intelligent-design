@@ -1,51 +1,61 @@
 use std::fmt;
 
-use crate::error::{Result, Error};
+use crate::error::{Error, Result};
 use crate::interpreter::Stack;
-use crate::token::{Token, self};
+use crate::token::{self, Token};
 
 pub type StackOp = Box<dyn Fn(&mut Stack<Token>) -> Result<()>>;
 
-pub struct Op {
-    pub execute: StackOp,
+pub trait Op {
+    fn word(&self) -> &String;
+    fn check(&self, stack: &Stack<Token>) -> Result<()>;
+    fn execute(&self, stack: &mut Stack<Token>) -> Result<()>;
 }
 
-impl fmt::Debug for Op {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Op").field("execute", &"...".to_string()).finish()
-    }
+pub struct PlusOp {
+    word: String,
 }
 
-impl PartialEq for Op {
-    fn eq(&self, other: &Self) -> bool {
-        false
-    }
-}
-
-pub fn plus_op(stack: &mut Stack<Token>) -> Result<()> {
-    if stack.len() < 2 {
-        return Err(Error::StackUnderflow);
-    }
-
-    let is_int_a = stack.dip(1).map(|t| t.is_int()).unwrap_or(false);
-    let is_int_b = stack.dip(0).map(|t| t.is_int()).unwrap_or(false);
-    if (!is_int_a) || (!is_int_b) {
-        return Err(Error::TypeError("integer".to_string()));
-    }
-
-    if let Some(Token::IntLiteral(b)) = stack.pop() {
-        if let Some(Token::IntLiteral(a)) = stack.pop() {
-            stack.push(Token::IntLiteral(a + b))?;
+impl PlusOp {
+    pub fn new() -> Self {
+        PlusOp {
+            word: "+".to_string(),
         }
     }
-
-    Ok(())
 }
 
-pub fn plus_op_factory() -> Op {
-    Op {
-        execute: Box::new(plus_op),
+impl Op for PlusOp {
+    fn word(&self) -> &String {
+        &self.word
     }
+
+    fn check(&self, stack: &Stack<Token>) -> Result<()> {
+        if stack.len() < 2 {
+            return Err(Error::StackUnderflow);
+        }
+
+        let is_int_a = stack.dip(1).map(|t| t.is_int()).unwrap_or(false);
+        let is_int_b = stack.dip(0).map(|t| t.is_int()).unwrap_or(false);
+        if (!is_int_a) || (!is_int_b) {
+            return Err(Error::TypeError("integer".to_string()));
+        }
+
+        Ok(())
+    }
+
+    fn execute(&self, stack: &mut Stack<Token>) -> Result<()> {
+        if let Some(Token::IntLiteral(b)) = stack.pop() {
+            if let Some(Token::IntLiteral(a)) = stack.pop() {
+                stack.push(Token::IntLiteral(plus_op(a, b)));
+            }
+        }
+        Ok(())
+    }
+}
+
+// #[id_op("PlusOp", "+", "i i -- i")]
+pub fn plus_op(a: isize, b: isize) -> isize {
+    a + b
 }
 
 #[cfg(test)]

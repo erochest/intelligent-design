@@ -86,8 +86,7 @@ impl Interpreter {
             match exec {
                 Executable::Prog(_) => todo!(),
                 Executable::Oper(op) => {
-                    let op = &op.execute;
-                    op(&mut self.stack)?;
+                    op.execute(&mut self.stack)?;
                 }
             }
         }
