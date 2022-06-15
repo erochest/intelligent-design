@@ -46,7 +46,7 @@ impl Op for PlusOp {
     fn execute(&self, stack: &mut Stack<Token>) -> Result<()> {
         if let Some(Token::IntLiteral(b)) = stack.pop() {
             if let Some(Token::IntLiteral(a)) = stack.pop() {
-                stack.push(Token::IntLiteral(plus_op(a, b)));
+                stack.push(Token::IntLiteral(plus_op(a, b)))?;
             }
         }
         Ok(())
